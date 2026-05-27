@@ -379,10 +379,14 @@
   <div class="card">
     <div class="section-label">🗺️ 爱的足迹地图</div>
     <div class="card-head">我们一起去过的地方</div>
-    <div class="card-sub">点击地图选位置 → 输入名称 → 添加足迹</div>
+    <div class="card-sub">搜索地点 → 定位 → 添加足迹</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <input type="text" id="mapSearchInput" placeholder="输入地点名称搜索定位…" style="flex:1;padding:8px 12px;border-radius:12px;border:1px solid var(--pink-4);font-size:13px;background:var(--input-bg);color:var(--text);">
+      <button class="btn-sm" id="mapSearchBtn" style="flex-shrink:0;">🔍 搜索</button>
+    </div>
     <div id="loveMap" style="border:2px solid var(--pink-4);"></div>
     <div style="display:flex;gap:8px;margin-top:10px;">
-      <input type="text" id="mapPlaceName" placeholder="地点名称（如：第一次约会的地方）" style="flex:1;padding:8px 12px;border-radius:12px;border:1px solid var(--pink-4);font-size:13px;background:var(--input-bg);color:var(--text);">
+      <input type="text" id="mapPlaceName" placeholder="给这个地点起个名字…" style="flex:1;padding:8px 12px;border-radius:12px;border:1px solid var(--pink-4);font-size:13px;background:var(--input-bg);color:var(--text);">
       <button class="btn-sm" id="mapAddBtn" style="flex-shrink:0;">📍 添加</button>
       <button class="btn-sm" id="mapClearPin" style="flex-shrink:0;background:var(--text-sub);display:none;">✕ 取消</button>
     </div>
@@ -772,6 +776,81 @@ function escapeHtml(s) {
 
 // Expose delete function globally for popup onclick
 window._delMarker = delMarker;
+
+// ========== Geocode search ==========
+async function geocodeSearch(query) {
+  // Try Amap geocoding first (no key needed for POI search)
+  try {
+    var url = 'https://restapi.amap.com/v5/place/text?parameters=' + encodeURIComponent(JSON.stringify({
+      keywords: query,
+      region: '全国',
+      page_size: 1,
+      show_fields: 'business_area,children'
+    }));
+    // Amap V5 API requires key, fall back to V3 POI search
+    url = 'https://restapi.amap.com/v3/place/text?keywords=' + encodeURIComponent(query) + '&offset=1&page=1&key=&region=全国&extensions=base';
+    var res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    var data = await res.json();
+    if (data.status === '1' && data.pois && data.pois.length > 0) {
+      var p = data.pois[0];
+      return { lat: parseFloat(p.location.split(',')[1]), lng: parseFloat(p.location.split(',')[0]), name: p.name, addr: p.address };
+    }
+    throw new Error('Amap failed');
+  } catch(e1) {
+    // Fallback: Nominatim (OSM)
+    try {
+      var res2 = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query), { signal: AbortSignal.timeout(5000) });
+      var data2 = await res2.json();
+      if (data2.length > 0) {
+        return { lat: parseFloat(data2[0].lat), lng: parseFloat(data2[0].lon), name: data2[0].display_name.split(',')[0], addr: '' };
+      }
+    } catch(e2) { /* ignore */ }
+  }
+  return null;
+}
+
+async function searchAndFly() {
+  var query = document.getElementById('mapSearchInput').value.trim();
+  if (!query) {
+    document.getElementById('selectedHint').textContent = '⚠️ 请输入地点名称';
+    return;
+  }
+  document.getElementById('selectedHint').textContent = '🔍 正在搜索：' + query + '...';
+  document.getElementById('mapSearchBtn').textContent = '⏳';
+  document.getElementById('mapSearchBtn').disabled = true;
+
+  var result = await geocodeSearch(query);
+
+  document.getElementById('mapSearchBtn').textContent = '🔍 搜索';
+  document.getElementById('mapSearchBtn').disabled = false;
+
+  if (!result) {
+    document.getElementById('selectedHint').textContent = '😢 未找到"' + query + '"，换个关键词试试';
+    return;
+  }
+
+  // Fly to location
+  var zoom = loveMap.getZoom() < 14 ? 14 : loveMap.getZoom();
+  loveMap.setView([result.lat, result.lng], zoom, { animate: true });
+
+  // Place temp pin
+  if (tempPin) loveMap.removeLayer(tempPin);
+  pendingLatLng = { lat: result.lat, lng: result.lng };
+  tempPin = L.marker([result.lat, result.lng], { icon: tempPinIcon }).addTo(loveMap);
+
+  // Auto-fill name
+  document.getElementById('mapPlaceName').value = result.addr
+    ? (result.name + ' · ' + result.addr)
+    : result.name;
+  document.getElementById('selectedHint').textContent = '✅ 已定位：' + result.name + ' — 可修改名称后点击添加';
+  document.getElementById('mapClearPin').style.display = 'inline-block';
+}
+
+// Search button + Enter key
+document.getElementById('mapSearchBtn').addEventListener('click', searchAndFly);
+document.getElementById('mapSearchInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') searchAndFly();
+});
 
 function renderMarkerList() {
   var container = document.getElementById('mapMarkerList');
