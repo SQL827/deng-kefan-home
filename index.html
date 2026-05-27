@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>邓可凡 ❤ 专属小窝</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
+<noscript><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/leaflet/1.9.4/leaflet.min.css"></noscript>
 <style>
   :root {
     --bg1: #FDD0F1; --bg2: #FFE4E1; --bg3: #FFF0F5; --bg4: #FDD0F1;
@@ -193,6 +194,13 @@
 
   /* === Map === */
   #loveMap { height:280px; border-radius:16px; z-index:1; margin-top:12px; }
+  /* Inline critical Leaflet styles as fallback */
+  .leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0}
+  .leaflet-container{overflow:hidden}
+  .leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow{-webkit-user-select:none;user-select:none}
+  .leaflet-tile::selection{background:transparent}
+  .leaflet-tile{visibility:hidden}
+  .leaflet-tile-loaded{visibility:inherit}
   .map-add-btn {
     display:inline-block; margin-top:10px; font-size:13px; color:var(--text-sub);
     cursor:pointer; padding:6px 16px; border-radius:20px; border:1px solid var(--pink-4);
@@ -412,6 +420,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>window._leaflet_ok=typeof L!=='undefined';</script>
+<script>if(!window._leaflet_ok){document.write('<script src="https://cdn.bootcdn.net/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>');}</script>
 <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
 <script>
 // ==================== NIGHT MODE ====================
@@ -710,21 +720,10 @@ function initMap() {
 
   loveMap = L.map('loveMap', { attributionControl: false }).setView([30.5728, 104.0668], 5);
 
-  // Try multiple tile sources, use first working one
-  var tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-  L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(loveMap);
-
-  // Also add a fallback layer
-  setTimeout(function() {
-    var tiles = loveMap.querySelectorAll('.leaflet-tile');
-    if (tiles.length === 0 || !tiles[0].complete || tiles[0].naturalWidth === 0) {
-      // OpenStreetMap blocked, try alternative
-      loveMap.eachLayer(function(layer) { if (layer._url) loveMap.removeLayer(layer); });
-      L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-        subdomains: '1234', maxZoom: 18
-      }).addTo(loveMap);
-    }
-  }, 5000);
+  // Use Amap (高德) tiles directly — works reliably in China
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: '1234', maxZoom: 18, attribution: '高德地图'
+  }).addTo(loveMap);
 
   // Load saved markers
   mapMarkers.forEach(function(m) {
@@ -737,16 +736,15 @@ function initMap() {
     document.getElementById('mapPlaceName').focus();
   });
 
-  // Fix: invalidate size after container becomes visible
-  setTimeout(function() { loveMap.invalidateSize(); }, 500);
+  setTimeout(function() { loveMap.invalidateSize(); }, 300);
 }
 
-// Init map directly (no lazy loading)
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() { setTimeout(initMap, 800); });
-} else {
-  setTimeout(initMap, 800);
+// Init when Leaflet JS is loaded
+function tryInitMap() {
+  if (typeof L !== 'undefined') { initMap(); return; }
+  setTimeout(tryInitMap, 200);
 }
+tryInitMap();
 
 document.getElementById('mapAddBtn').addEventListener('click', function() {
   const name = document.getElementById('mapPlaceName').value.trim();
