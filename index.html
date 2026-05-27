@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>邓可凡 ❤ 专属小窝</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
 <style>
   :root {
     --bg1: #FDD0F1; --bg2: #FFE4E1; --bg3: #FFF0F5; --bg4: #FDD0F1;
@@ -411,7 +411,7 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
 <script>
 // ==================== NIGHT MODE ====================
@@ -705,14 +705,29 @@ let mapMarkers = JSON.parse(localStorage.getItem(mapKey)) || [];
 let pendingLatLng = null;
 
 function initMap() {
-  loveMap = L.map('loveMap').setView([30.5728, 104.0668], 5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap',
-    maxZoom: 18,
-  }).addTo(loveMap);
+  var mapEl = document.getElementById('loveMap');
+  if (!mapEl || mapEl._leaflet_id) return;
+
+  loveMap = L.map('loveMap', { attributionControl: false }).setView([30.5728, 104.0668], 5);
+
+  // Try multiple tile sources, use first working one
+  var tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(loveMap);
+
+  // Also add a fallback layer
+  setTimeout(function() {
+    var tiles = loveMap.querySelectorAll('.leaflet-tile');
+    if (tiles.length === 0 || !tiles[0].complete || tiles[0].naturalWidth === 0) {
+      // OpenStreetMap blocked, try alternative
+      loveMap.eachLayer(function(layer) { if (layer._url) loveMap.removeLayer(layer); });
+      L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+        subdomains: '1234', maxZoom: 18
+      }).addTo(loveMap);
+    }
+  }, 5000);
 
   // Load saved markers
-  mapMarkers.forEach(m => {
+  mapMarkers.forEach(function(m) {
     L.marker([m.lat, m.lng]).addTo(loveMap).bindPopup(m.name);
   });
 
@@ -720,10 +735,17 @@ function initMap() {
   loveMap.on('click', function(e) {
     pendingLatLng = e.latlng;
     document.getElementById('mapPlaceName').focus();
-    // Visual feedback
-    document.getElementById('loveMap').style.boxShadow = '0 0 0 4px rgba(255,105,180,0.5)';
-    setTimeout(() => { document.getElementById('loveMap').style.boxShadow = ''; }, 800);
   });
+
+  // Fix: invalidate size after container becomes visible
+  setTimeout(function() { loveMap.invalidateSize(); }, 500);
+}
+
+// Init map directly (no lazy loading)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() { setTimeout(initMap, 800); });
+} else {
+  setTimeout(initMap, 800);
 }
 
 document.getElementById('mapAddBtn').addEventListener('click', function() {
@@ -920,20 +942,6 @@ document.addEventListener('keydown', function(e) {
 
 // ==================== INIT MAP ON DEMAND ====================
 // Lazy init map when scrolled near it
-let mapInited = false;
-const mapObserver = new IntersectionObserver(function(entries) {
-  entries.forEach(entry => {
-    if (entry.isIntersecting && !mapInited) {
-      initMap();
-      mapInited = true;
-      mapObserver.disconnect();
-    }
-  });
-}, { rootMargin: '200px' });
-const mapCard = document.getElementById('loveMap').closest('.card');
-if (mapCard) mapObserver.observe(mapCard);
-// Fallback: init after 3s anyway
-setTimeout(() => { if (!mapInited) { initMap(); mapInited = true; } }, 3000);
 </script>
 
 </body>
