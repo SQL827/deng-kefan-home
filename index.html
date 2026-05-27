@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>邓可凡 ❤ 专属小窝</title>
+<style>
+  :root {
+    --pink-1: #FDD0F1;
+    --pink-2: #FFE4E1;
+    --pink-3: #FFF0F5;
+    --pink-4: #FFB6C1;
+    --pink-5: #E75480;
+    --pink-6: #FF69B4;
+    --white: #FFFFFF;
+    --dark: #5A3E4B;
+    --glass-bg: rgba(255,255,255,0.35);
+    --glass-border: rgba(255,255,255,0.6);
+    --shadow: 0 8px 32px rgba(226,43,89,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FDD0F1 0%, #FFE4E1 30%, #FFF0F5 60%, #FDD0F1 100%);
+    background-attachment: fixed;
+    font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 30px 20px 60px;
+    overflow-x: hidden;
+    cursor: default;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* === Floating particles === */
+  .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .particle {
+    position: absolute; opacity: 0;
+    animation: float linear infinite;
+  }
+  @keyframes float {
+    0%   { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.8; }
+    90%  { opacity: 0.6; }
+    100% { transform: translateY(105vh) translateX(40px) rotate(360deg); opacity: 0; }
+  }
+
+  /* === Main container === */
+  .container {
+    position: relative; z-index: 1;
+    max-width: 600px; width: 100%;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+
+  /* === Glass card === */
+  .card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 28px 24px;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(226,43,89,0.18);
+  }
+
+  /* === Title section === */
+  .title-card { padding: 36px 24px; }
+  .title-main {
+    font-family: "Georgia", "PingFang SC", "Microsoft YaHei", serif;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 700;
+    background: linear-gradient(135deg, #E75480, #FF69B4, #E75480);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+    min-height: 1.3em;
+  }
+  .title-sub {
+    font-size: 15px;
+    color: #C08497;
+    letter-spacing: 2px;
+  }
+
+  /* === Anniversary counter === */
+  .counter-card { padding: 22px 24px; }
+  .counter-label {
+    font-size: 15px;
+    color: #B08090;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .counter-digits {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .digit-box {
+    background: linear-gradient(135deg, #FFF0F5, #FFE4E1);
+    border-radius: 16px;
+    padding: 14px 10px;
+    min-width: 64px;
+    box-shadow: 0 4px 16px rgba(226,43,89,0.10);
+  }
+  .digit-num {
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 800;
+    color: #E75480;
+    font-variant-numeric: tabular-nums;
+    font-family: "SF Mono", "Menlo", "Consolas", "Microsoft YaHei", monospace;
+  }
+  .digit-unit {
+    font-size: 12px;
+    color: #C08497;
+    margin-top: 2px;
+  }
+  .anniversary-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #FF69B4, #E75480);
+    color: white;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-top: 12px;
+    animation: badgePulse 2s ease-in-out infinite;
+  }
+  @keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,105,180,0.4); }
+    50%      { box-shadow: 0 0 0 12px rgba(255,105,180,0); }
+  }
+
+  /* === Action cards row === */
+  .action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+  .action-card {
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    user-select: none;
+    padding: 22px 12px;
+  }
+  .action-card:active { transform: scale(0.94); }
+  .action-icon { font-size: 36px; margin-bottom: 6px; display: block; }
+  .action-label { font-size: 14px; color: #8B6B7A; font-weight: 600; }
+  .flower-count {
+    font-size: 12px;
+    color: #E75480;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  /* === Photo wall === */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .photo-placeholder {
+    aspect-ratio: 1/1;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #FFF0F5, #FFE4E1);
+    border: 2px dashed #FFB6C1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    font-size: 28px;
+    color: #E75480;
+  }
+  .photo-placeholder:hover {
+    transform: rotate(2deg) scale(1.05);
+    border-color: #E75480;
+    box-shadow: 0 8px 24px rgba(226,43,89,0.18);
+  }
+  .photo-placeholder img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    position: absolute; top: 0; left: 0;
+  }
+  .photo-label {
+    font-size: 11px; color: #C08497; margin-top: 2px;
+    position: relative; z-index: 1;
+  }
+
+  /* === Daily quote === */
+  .quote-text {
+    font-size: 17px;
+    color: #6B4B5A;
+    line-height: 1.7;
+    font-style: italic;
+    transition: opacity 0.5s ease;
+  }
+  .quote-refresh {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #C08497;
+    cursor: pointer;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid #FFB6C1;
+    transition: all 0.3s ease;
+  }
+  .quote-refresh:hover {
+    background: #FFB6C1;
+    color: white;
+  }
+
+  /* === Music box === */
+  .music-list { text-align: left; }
+  .music-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-bottom: 4px;
+  }
+  .music-item:hover { background: rgba(255,182,193,0.2); }
+  .music-item.playing { background: rgba(255,105,180,0.15); }
+  .music-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFB6C1, #E75480);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .music-item.playing .music-num {
+    animation: musicPulse 0.8s ease-in-out infinite;
+  }
+  @keyframes musicPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.15); }
+  }
+  .music-info { flex: 1; min-width: 0; }
+  .music-title { font-size: 15px; color: #5A3E4B; font-weight: 600; }
+  .music-artist { font-size: 12px; color: #B08090; }
+  .music-playing-indicator {
+    font-size: 12px; color: #E75480;
+    display: none;
+  }
+  .music-item.playing .music-playing-indicator { display: inline; }
+
+  /* === Footer === */
+  .footer-text {
+    text-align: center;
+    font-size: 12px;
+    color: #C08497;
+    letter-spacing: 1px;
+    opacity: 0.7;
+  }
+
+  /* === Message modal === */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal-box {
+    background: white;
+    border-radius: 24px;
+    padding: 32px 24px;
+    max-width: 400px; width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(226,43,89,0.2);
+  }
+  .modal-title { font-size: 20px; color: #E75480; margin-bottom: 12px; }
+  .modal-text { font-size: 15px; color: #6B4B5A; line-height: 1.7; margin-bottom: 20px; }
+  .modal-close {
+    background: linear-gradient(135deg, #FFB6C1, #E75480);
+    color: white; border: none; border-radius: 20px;
+    padding: 10px 32px; font-size: 15px; cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .modal-close:active { transform: scale(0.95); }
+
+  /* === Cherry blossom burst === */
+  .burst {
+    position: fixed;
+    pointer-events: none;
+    z-index: 200;
+    font-size: 24px;
+    animation: burstAnim 2s ease-out forwards;
+  }
+  @keyframes burstAnim {
+    0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+  }
+
+  /* === Responsive === */
+  @media (max-width: 480px) {
+    .action-row { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .action-card { padding: 16px 6px; }
+    .action-icon { font-size: 28px; }
+    .photo-grid { grid-template-columns: repeat(2, 1fr); }
+    .card { padding: 20px 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .particle, .burst, .anniversary-badge, .music-item.playing .music-num {
+      animation: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating particles -->
+<div class="particles" id="particles"></div>
+
+<!-- Main content -->
+<div class="container">
+
+  <!-- Title -->
+  <div class="card title-card">
+    <div class="title-main" id="typewriter"></div>
+    <div class="title-sub">✨ 此生有你 · 皆是温柔 ✨</div>
+  </div>
+
+  <!-- Anniversary Counter -->
+  <div class="card counter-card">
+    <div class="counter-label">💕 我们已经在一起</div>
+    <div class="counter-digits">
+      <div class="digit-box"><div class="digit-num" id="days">170</div><div class="digit-unit">天</div></div>
+      <div class="digit-box"><div class="digit-num" id="hours">00</div><div class="digit-unit">时</div></div>
+      <div class="digit-box"><div class="digit-num" id="minutes">00</div><div class="digit-unit">分</div></div>
+      <div class="digit-box"><div class="digit-num" id="seconds">00</div><div class="digit-unit">秒</div></div>
+    </div>
+    <div class="anniversary-badge">🎉 170天纪念日</div>
+  </div>
+
+  <!-- Action Cards -->
+  <div class="action-row">
+    <div class="card action-card" id="btnFlower" title="送花给她">
+      <span class="action-icon">🌹</span>
+      <div class="action-label">送花</div>
+      <div class="flower-count" id="flowerCount">已送 0 朵</div>
+    </div>
+    <div class="card action-card" id="btnMessage" title="查看留言">
+      <span class="action-icon">💌</span>
+      <div class="action-label">留言</div>
+    </div>
+    <div class="card action-card" id="btnMemory" title="回忆照片">
+      <span class="action-icon">📷</span>
+      <div class="action-label">回忆</div>
+    </div>
+  </div>
+
+  <!-- Photo Wall -->
+  <div class="card">
+    <div style="font-size:16px;font-weight:700;color:#5A3E4B;margin-bottom:6px;">📸 我们的瞬间</div>
+    <div style="font-size:12px;color:#C08497;margin-bottom:16px;">点击照片位上传你们的回忆吧</div>
+    <div class="photo-grid" id="photoGrid">
+      <div class="photo-placeholder" data-idx="0"><span>📷</span><span class="photo-label">我们的合照</span></div>
+      <div class="photo-placeholder" data-idx="1"><span>🌸</span><span class="photo-label">第一次约会</span></div>
+      <div class="photo-placeholder" data-idx="2"><span>💕</span><span class="photo-label">甜蜜时刻</span></div>
+      <div class="photo-placeholder" data-idx="3"><span>🌟</span><span class="photo-label">一起旅行</span></div>
+      <div class="photo-placeholder" data-idx="4"><span>🎂</span><span class="photo-label">生日纪念</span></div>
+      <div class="photo-placeholder" data-idx="5"><span>💝</span><span class="photo-label">未来更多</span></div>
+    </div>
+    <input type="file" accept="image/*" id="fileInput" style="display:none">
+  </div>
+
+  <!-- Daily Quote -->
+  <div class="card">
+    <div class="quote-text" id="quoteText"></div>
+    <div class="quote-refresh" id="btnQuote">🔄 换一句</div>
+  </div>
+
+  <!-- Music Box -->
+  <div class="card">
+    <div style="font-size:16px;font-weight:700;color:#5A3E4B;margin-bottom:4px;">🎵 点一首歌给你</div>
+    <div style="font-size:12px;color:#C08497;margin-bottom:14px;">2026 最火浪漫情歌</div>
+    <div class="music-list" id="musicList"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-text">
+    💝 Made with love for 邓可凡 · 2026 💝
+  </div>
+
+</div>
+
+<!-- Message Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-text" id="modalText"></div>
+    <button class="modal-close" id="modalClose">💕 知道了</button>
+  </div>
+</div>
+
+<script>
+// ======= Anniversary Counter =======
+const START_DATE = new Date('2025-12-08T00:00:00');
+
+function updateCounter() {
+  const now = new Date();
+  const diff = now - START_DATE;
+  const totalSeconds = Math.floor(diff / 1000);
+  const d = Math.floor(totalSeconds / 86400);
+  const h = Math.floor((totalSeconds % 86400) / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+
+  document.getElementById('days').textContent = d;
+  document.getElementById('hours').textContent = String(h).padStart(2, '0');
+  document.getElementById('minutes').textContent = String(m).padStart(2, '0');
+  document.getElementById('seconds').textContent = String(s).padStart(2, '0');
+}
+updateCounter();
+setInterval(updateCounter, 1000);
+
+// ======= Typewriter =======
+const titleText = '邓可凡 ❤ 专属小窝';
+const twEl = document.getElementById('typewriter');
+let twIdx = 0;
+function typeWriter() {
+  if (twIdx < titleText.length) {
+    twEl.textContent += titleText[twIdx];
+    twIdx++;
+    setTimeout(typeWriter, 100 + Math.random() * 80);
+  }
+}
+setTimeout(typeWriter, 400);
+
+// ======= Floating Particles =======
+const particleContainer = document.getElementById('particles');
+const emojis = ['🌸', '💮', '💕', '✨', '🩷', '🌷', '💖', '🦋', '💗', '🎀'];
+for (let i = 0; i < 35; i++) {
+  const el = document.createElement('span');
+  el.className = 'particle';
+  el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+  el.style.left = Math.random() * 100 + '%';
+  el.style.fontSize = (14 + Math.random() * 22) + 'px';
+  el.style.animationDuration = (8 + Math.random() * 18) + 's';
+  el.style.animationDelay = Math.random() * 15 + 's';
+  particleContainer.appendChild(el);
+}
+
+// ======= Flower Button =======
+let flowerTotal = parseInt(localStorage.getItem('flowerTotal_dkf') || '0');
+document.getElementById('flowerCount').textContent = '已送 ' + flowerTotal + ' 朵';
+
+document.getElementById('btnFlower').addEventListener('click', function(e) {
+  flowerTotal++;
+  localStorage.setItem('flowerTotal_dkf', flowerTotal);
+  document.getElementById('flowerCount').textContent = '已送 ' + flowerTotal + ' 朵';
+
+  // Burst animation
+  const rect = this.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const burstEmojis = ['🌹', '💐', '🌸', '💮', '🌷', '💖', '✨', '🩷', '💗', '🎀', '💝', '🌺'];
+
+  for (let i = 0; i < 16; i++) {
+    const el = document.createElement('span');
+    el.className = 'burst';
+    el.textContent = burstEmojis[Math.floor(Math.random() * burstEmojis.length)];
+    el.style.left = cx + 'px';
+    el.style.top = cy + 'px';
+    el.style.setProperty('--dx', (Math.random() - 0.5) * 300 + 'px');
+    el.style.setProperty('--dy', (Math.random() - 0.5) * 300 - 80 + 'px');
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2000);
+  }
+});
+
+// ======= Message Button =======
+const messages = [
+  { title: '💌 给我的女孩', text: '邓可凡，遇见你是我最大的幸运。每一天都想跟你说，你笑起来的样子真好看，全世界都不及你。' },
+  { title: '💕 想对你说', text: '谢谢你出现在我的生命里，让平淡的日子都闪闪发光。你的每一个小情绪我都想小心收藏。' },
+  { title: '🌟 悄悄话', text: '不管今天工作多累，一想到回家能看到你的消息，就觉得一切都值得了。你就是我的充电宝。' },
+  { title: '🩷 真心话', text: '170天了，每天都比昨天更喜欢你一点。不是一时兴起，是来日方长。邓可凡，你是我最想留住的幸运。' },
+  { title: '🌸 小承诺', text: '我会努力成为更好的人，给你更好的生活。你负责美丽可爱，我负责宠你上天。拉钩~' },
+];
+let lastMsgIdx = -1;
+
+document.getElementById('btnMessage').addEventListener('click', function() {
+  let idx;
+  do { idx = Math.floor(Math.random() * messages.length); } while (idx === lastMsgIdx && messages.length > 1);
+  lastMsgIdx = idx;
+  document.getElementById('modalTitle').textContent = messages[idx].title;
+  document.getElementById('modalText').textContent = messages[idx].text;
+  document.getElementById('modal').classList.add('active');
+});
+
+// ======= Memory Button =======
+document.getElementById('btnMemory').addEventListener('click', function() {
+  document.getElementById('photoGrid').scrollIntoView({ behavior: 'smooth' });
+  // Flash the photo grid
+  const grid = document.getElementById('photoGrid');
+  grid.style.boxShadow = '0 0 0 6px rgba(255,105,180,0.4)';
+  setTimeout(() => { grid.style.boxShadow = ''; }, 800);
+});
+
+// ======= Modal close =======
+document.getElementById('modalClose').addEventListener('click', function() {
+  document.getElementById('modal').classList.remove('active');
+});
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('active');
+});
+
+// ======= Photo Upload =======
+let currentPhotoIdx = -1;
+const fileInput = document.getElementById('fileInput');
+const photoGrid = document.getElementById('photoGrid');
+
+// Load saved photos from localStorage
+function loadPhotos() {
+  const saved = JSON.parse(localStorage.getItem('photos_dkf') || '{}');
+  Object.keys(saved).forEach(idx => {
+    const placeholder = photoGrid.querySelector(`[data-idx="${idx}"]`);
+    if (placeholder && saved[idx]) {
+      const img = document.createElement('img');
+      img.src = saved[idx];
+      placeholder.innerHTML = '';
+      placeholder.appendChild(img);
+    }
+  });
+}
+loadPhotos();
+
+photoGrid.addEventListener('click', function(e) {
+  const placeholder = e.target.closest('.photo-placeholder');
+  if (!placeholder) return;
+  currentPhotoIdx = parseInt(placeholder.dataset.idx);
+  fileInput.click();
+});
+
+fileInput.addEventListener('change', function() {
+  if (!this.files || !this.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    const placeholder = photoGrid.querySelector(`[data-idx="${currentPhotoIdx}"]`);
+    if (placeholder) {
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      placeholder.innerHTML = '';
+      placeholder.appendChild(img);
+    }
+    // Save to localStorage
+    const saved = JSON.parse(localStorage.getItem('photos_dkf') || '{}');
+    saved[currentPhotoIdx] = dataUrl;
+    localStorage.setItem('photos_dkf', JSON.stringify(saved));
+  };
+  reader.readAsDataURL(this.files[0]);
+  this.value = '';
+});
+
+// ======= Daily Quote =======
+const quotes = [
+  '“喜欢你不是三分钟热度，是蓄谋已久后的深思熟虑。”',
+  '“世界很大，但我的心很小，只装得下你一个人。”',
+  '“你不用多好，我喜欢就好；我没有很好，你不嫌弃就好。”',
+  '“邓可凡，你的名字是我听过最短的情诗。”',
+  '“想把世界上所有美好都给你，但发现世界上最好的就是你。”',
+  '“不是在最好的时光遇见了你，而是遇见了你，才是我最好的时光。”',
+  '“余生很长，但我只想和你一起虚度光阴。”',
+  '“今天也想见到你，不管什么天气，不管什么距离。”',
+  '“你是我疲惫生活里的英雄梦想。”',
+  '“所谓幸福，就是每天醒来，你和阳光都在。”',
+];
+let lastQuoteIdx = -1;
+
+function refreshQuote() {
+  let idx;
+  do { idx = Math.floor(Math.random() * quotes.length); } while (idx === lastQuoteIdx && quotes.length > 1);
+  lastQuoteIdx = idx;
+  const el = document.getElementById('quoteText');
+  el.style.opacity = '0';
+  setTimeout(() => { el.textContent = quotes[idx]; el.style.opacity = '1'; }, 250);
+}
+refreshQuote();
+document.getElementById('btnQuote').addEventListener('click', refreshQuote);
+
+// ======= Music Box =======
+const playlist = [
+  { title: '晚风告白', artist: '星野', url: '' },
+  { title: '心动信号', artist: '汪苏泷', url: '' },
+  { title: '小美满', artist: '周深', url: '' },
+  { title: '恋人', artist: '李荣浩', url: '' },
+  { title: '星河入梦', artist: '古风情歌', url: '' },
+  { title: '奔赴', artist: '司南', url: '' },
+];
+
+const musicList = document.getElementById('musicList');
+let currentTrack = -1;
+let audio = null;
+
+playlist.forEach((song, idx) => {
+  const item = document.createElement('div');
+  item.className = 'music-item';
+  item.innerHTML = `
+    <div class="music-num">${idx + 1}</div>
+    <div class="music-info">
+      <div class="music-title">${song.title}</div>
+      <div class="music-artist">${song.artist}</div>
+    </div>
+    <span class="music-playing-indicator">▶ 播放中</span>
+  `;
+  item.addEventListener('click', () => playTrack(idx));
+  musicList.appendChild(item);
+});
+
+function playTrack(idx) {
+  // Stop previous
+  if (audio) { audio.pause(); audio = null; }
+  document.querySelectorAll('.music-item').forEach(el => el.classList.remove('playing'));
+
+  currentTrack = idx;
+  const item = musicList.children[idx];
+  item.classList.add('playing');
+
+  // Since we can't embed real audio, show a nice visual feedback
+  // The "playing" indicator works as a visual cue
+  // In a real deployment, you'd link to actual audio files
+  const song = playlist[idx];
+  showMusicToast(`🎵 正在播放：${song.title} - ${song.artist}`);
+}
+
+function showMusicToast(msg) {
+  let toast = document.getElementById('musicToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'musicToast';
+    toast.style.cssText = `
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: rgba(90,62,75,0.9); color: white; padding: 12px 24px;
+      border-radius: 20px; font-size: 14px; z-index: 300;
+      backdrop-filter: blur(10px); pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(10px)';
+  }, 2200);
+}
+
+// ======= Keyboard shortcut =======
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'f' || e.key === 'F') {
+    document.getElementById('btnFlower').click();
+  }
+});
+</script>
+
+</body>
+</html>
