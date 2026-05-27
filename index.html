@@ -5,345 +5,299 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>邓可凡 ❤ 专属小窝</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root {
-    --pink-1: #FDD0F1;
-    --pink-2: #FFE4E1;
-    --pink-3: #FFF0F5;
-    --pink-4: #FFB6C1;
-    --pink-5: #E75480;
-    --pink-6: #FF69B4;
-    --white: #FFFFFF;
-    --dark: #5A3E4B;
+    --bg1: #FDD0F1; --bg2: #FFE4E1; --bg3: #FFF0F5; --bg4: #FDD0F1;
     --glass-bg: rgba(255,255,255,0.35);
     --glass-border: rgba(255,255,255,0.6);
     --shadow: 0 8px 32px rgba(226,43,89,0.12);
+    --text: #5A3E4B; --text-sub: #C08497; --text-mid: #6B4B5A;
+    --pink-4: #FFB6C1; --pink-5: #E75480; --pink-6: #FF69B4;
+    --card-hover-bg: rgba(255,255,255,0.45);
+    --input-bg: rgba(255,255,255,0.7);
+    --tag-bg: #FFF0F5;
   }
-
+  body.night-mode {
+    --bg1: #1a1020; --bg2: #1a1228; --bg3: #1e1630; --bg4: #1a1020;
+    --glass-bg: rgba(30,20,50,0.55);
+    --glass-border: rgba(255,182,193,0.2);
+    --shadow: 0 8px 32px rgba(0,0,0,0.3);
+    --text: #D4C5E0; --text-sub: #9B8AAD; --text-mid: #C0B0D0;
+    --card-hover-bg: rgba(40,30,60,0.6);
+    --input-bg: rgba(30,22,50,0.7);
+    --tag-bg: #2a1d3a;
+  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
     min-height: 100vh;
-    background: linear-gradient(135deg, #FDD0F1 0%, #FFE4E1 30%, #FFF0F5 60%, #FDD0F1 100%);
+    background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 30%, var(--bg3) 60%, var(--bg4) 100%);
     background-attachment: fixed;
-    font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 30px 20px 60px;
-    overflow-x: hidden;
-    cursor: default;
+    font-family: "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    display: flex; justify-content: center; align-items: flex-start;
+    padding: 30px 20px 60px; overflow-x: hidden; cursor: default;
     -webkit-font-smoothing: antialiased;
+    transition: background 0.8s ease;
   }
-
-  /* === Floating particles === */
-  .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-  .particle {
-    position: absolute; opacity: 0;
-    animation: float linear infinite;
-  }
+  .particles { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  .particle { position:absolute; opacity:0; animation:float linear infinite; }
   @keyframes float {
-    0%   { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
-    10%  { opacity: 0.8; }
-    90%  { opacity: 0.6; }
-    100% { transform: translateY(105vh) translateX(40px) rotate(360deg); opacity: 0; }
+    0%   { transform:translateY(-10vh) translateX(0) rotate(0deg); opacity:0; }
+    10%  { opacity:0.8; } 90% { opacity:0.6; }
+    100% { transform:translateY(105vh) translateX(40px) rotate(360deg); opacity:0; }
   }
-
-  /* === Main container === */
-  .container {
-    position: relative; z-index: 1;
-    max-width: 600px; width: 100%;
-    display: flex; flex-direction: column; gap: 24px;
-  }
-
-  /* === Glass card === */
+  .container { position:relative; z-index:1; max-width:600px; width:100%; display:flex; flex-direction:column; gap:24px; }
   .card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
+    background: var(--glass-bg); backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    padding: 28px 24px;
-    box-shadow: var(--shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: center;
+    border:1px solid var(--glass-border); border-radius:24px;
+    padding:28px 24px; box-shadow:var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.8s ease;
+    text-align:center;
   }
-  .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(226,43,89,0.18);
-  }
+  .card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(226,43,89,0.18); }
+  .card-head { font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px; }
+  .card-sub { font-size:12px; color:var(--text-sub); margin-bottom:14px; }
 
-  /* === Title section === */
-  .title-card { padding: 36px 24px; }
+  /* Title */
+  .title-card { padding:36px 24px; }
   .title-main {
-    font-family: "Georgia", "PingFang SC", "Microsoft YaHei", serif;
-    font-size: clamp(28px, 5vw, 42px);
-    font-weight: 700;
+    font-family:"Georgia","PingFang SC","Microsoft YaHei",serif;
+    font-size:clamp(28px,5vw,42px); font-weight:700;
     background: linear-gradient(135deg, #E75480, #FF69B4, #E75480);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 8px;
-    min-height: 1.3em;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    margin-bottom:8px; min-height:1.3em;
   }
-  .title-sub {
-    font-size: 15px;
-    color: #C08497;
-    letter-spacing: 2px;
-  }
+  .title-sub { font-size:15px; color:var(--text-sub); letter-spacing:2px; }
 
-  /* === Anniversary counter === */
-  .counter-card { padding: 22px 24px; }
-  .counter-label {
-    font-size: 15px;
-    color: #B08090;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-  }
-  .counter-digits {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
+  /* Counter */
+  .counter-card { padding:22px 24px; }
+  .counter-label { font-size:15px; color:var(--text-sub); margin-bottom:10px; letter-spacing:1px; }
+  .counter-digits { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; }
   .digit-box {
-    background: linear-gradient(135deg, #FFF0F5, #FFE4E1);
-    border-radius: 16px;
-    padding: 14px 10px;
-    min-width: 64px;
-    box-shadow: 0 4px 16px rgba(226,43,89,0.10);
+    background: var(--tag-bg); border-radius:16px; padding:14px 10px;
+    min-width:64px; box-shadow:0 4px 16px rgba(226,43,89,0.10);
   }
   .digit-num {
-    font-size: clamp(26px, 4vw, 38px);
-    font-weight: 800;
-    color: #E75480;
-    font-variant-numeric: tabular-nums;
-    font-family: "SF Mono", "Menlo", "Consolas", "Microsoft YaHei", monospace;
+    font-size:clamp(26px,4vw,38px); font-weight:800; color:#E75480;
+    font-variant-numeric:tabular-nums;
+    font-family:"SF Mono","Menlo","Consolas","Microsoft YaHei",monospace;
   }
-  .digit-unit {
-    font-size: 12px;
-    color: #C08497;
-    margin-top: 2px;
-  }
+  .digit-unit { font-size:12px; color:var(--text-sub); margin-top:2px; }
   .anniversary-badge {
-    display: inline-block;
-    background: linear-gradient(135deg, #FF69B4, #E75480);
-    color: white;
-    border-radius: 20px;
-    padding: 6px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    margin-top: 12px;
-    animation: badgePulse 2s ease-in-out infinite;
+    display:inline-block; background:linear-gradient(135deg,#FF69B4,#E75480);
+    color:#fff; border-radius:20px; padding:6px 16px;
+    font-size:13px; font-weight:600; letter-spacing:1px; margin-top:12px;
+    animation:badgePulse 2s ease-in-out infinite;
   }
   @keyframes badgePulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(255,105,180,0.4); }
-    50%      { box-shadow: 0 0 0 12px rgba(255,105,180,0); }
+    0%,100% { box-shadow:0 0 0 0 rgba(255,105,180,0.4); }
+    50%     { box-shadow:0 0 0 12px rgba(255,105,180,0); }
   }
 
-  /* === Action cards row === */
-  .action-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 14px;
-  }
-  .action-card {
-    cursor: pointer;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    user-select: none;
-    padding: 22px 12px;
-  }
-  .action-card:active { transform: scale(0.94); }
-  .action-icon { font-size: 36px; margin-bottom: 6px; display: block; }
-  .action-label { font-size: 14px; color: #8B6B7A; font-weight: 600; }
-  .flower-count {
-    font-size: 12px;
-    color: #E75480;
-    margin-top: 6px;
-    font-weight: 600;
-  }
+  /* Actions */
+  .action-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  .action-card { cursor:pointer; transition:transform 0.25s ease; user-select:none; padding:22px 12px; }
+  .action-card:active { transform:scale(0.94); }
+  .action-icon { font-size:36px; margin-bottom:6px; display:block; }
+  .action-label { font-size:14px; color:var(--text-mid); font-weight:600; }
+  .flower-count { font-size:12px; color:#E75480; margin-top:6px; font-weight:600; }
 
-  /* === Photo wall === */
-  .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
+  /* Photos */
+  .photo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
   .photo-placeholder {
-    aspect-ratio: 1/1;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #FFF0F5, #FFE4E1);
-    border: 2px dashed #FFB6C1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    font-size: 28px;
-    color: #E75480;
+    aspect-ratio:1/1; border-radius:16px;
+    background:var(--tag-bg); border:2px dashed var(--pink-4);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    cursor:pointer; transition:all 0.3s ease; position:relative; overflow:hidden;
+    font-size:28px; color:#E75480;
   }
-  .photo-placeholder:hover {
-    transform: rotate(2deg) scale(1.05);
-    border-color: #E75480;
-    box-shadow: 0 8px 24px rgba(226,43,89,0.18);
-  }
-  .photo-placeholder img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    position: absolute; top: 0; left: 0;
-  }
-  .photo-label {
-    font-size: 11px; color: #C08497; margin-top: 2px;
-    position: relative; z-index: 1;
-  }
+  .photo-placeholder:hover { transform:rotate(2deg) scale(1.05); border-color:#E75480; box-shadow:0 8px 24px rgba(226,43,89,0.18); }
+  .photo-placeholder img { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; }
+  .photo-label { font-size:11px; color:var(--text-sub); margin-top:2px; position:relative; z-index:1; }
 
-  /* === Daily quote === */
-  .quote-text {
-    font-size: 17px;
-    color: #6B4B5A;
-    line-height: 1.7;
-    font-style: italic;
-    transition: opacity 0.5s ease;
-  }
+  /* Quote */
+  .quote-text { font-size:17px; color:var(--text-mid); line-height:1.7; font-style:italic; transition:opacity 0.5s ease; }
   .quote-refresh {
-    display: inline-block;
-    margin-top: 12px;
-    font-size: 12px;
-    color: #C08497;
-    cursor: pointer;
-    padding: 6px 16px;
-    border-radius: 20px;
-    border: 1px solid #FFB6C1;
-    transition: all 0.3s ease;
+    display:inline-block; margin-top:12px; font-size:12px; color:var(--text-sub);
+    cursor:pointer; padding:6px 16px; border-radius:20px; border:1px solid var(--pink-4);
+    transition:all 0.3s ease;
   }
-  .quote-refresh:hover {
-    background: #FFB6C1;
-    color: white;
-  }
+  .quote-refresh:hover { background:var(--pink-4); color:#fff; }
 
-  /* === Music box === */
-  .music-list { text-align: left; }
+  /* Music */
+  .music-list { text-align:left; }
   .music-item {
-    display: flex; align-items: center; gap: 14px;
-    padding: 13px 14px;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    margin-bottom: 4px;
+    display:flex; align-items:center; gap:14px; padding:13px 14px;
+    border-radius:14px; cursor:pointer; transition:all 0.25s ease; margin-bottom:4px;
   }
-  .music-item:hover { background: rgba(255,182,193,0.2); }
-  .music-item.playing { background: rgba(255,105,180,0.15); }
+  .music-item:hover { background:rgba(255,182,193,0.2); }
+  .music-item.playing { background:rgba(255,105,180,0.15); }
   .music-num {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #FFB6C1, #E75480);
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700;
-    flex-shrink: 0;
+    width:28px; height:28px; border-radius:50%;
+    background:linear-gradient(135deg,#FFB6C1,#E75480); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; flex-shrink:0;
   }
-  .music-item.playing .music-num {
-    animation: musicPulse 0.8s ease-in-out infinite;
-  }
-  @keyframes musicPulse {
-    0%, 100% { transform: scale(1); }
-    50%      { transform: scale(1.15); }
-  }
-  .music-info { flex: 1; min-width: 0; }
-  .music-title { font-size: 15px; color: #5A3E4B; font-weight: 600; }
-  .music-artist { font-size: 12px; color: #B08090; }
-  .music-playing-indicator {
-    font-size: 12px; color: #E75480;
-    display: none;
-  }
-  .music-item.playing .music-playing-indicator { display: inline; }
+  .music-item.playing .music-num { animation:musicPulse 0.8s ease-in-out infinite; }
+  @keyframes musicPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+  .music-info { flex:1; min-width:0; }
+  .music-title { font-size:15px; color:var(--text); font-weight:600; }
+  .music-artist { font-size:12px; color:var(--text-sub); }
+  .music-playing-indicator { font-size:12px; color:#E75480; display:none; }
+  .music-item.playing .music-playing-indicator { display:inline; }
 
-  /* === Footer === */
-  .footer-text {
-    text-align: center;
-    font-size: 12px;
-    color: #C08497;
-    letter-spacing: 1px;
-    opacity: 0.7;
+  /* === Time Capsule === */
+  .capsule-locked, .capsule-unlocked { transition:opacity 0.5s ease; }
+  .capsule-icon { font-size:56px; display:block; margin-bottom:10px; }
+  .capsule-countdown { font-size:14px; color:var(--text-sub); margin-bottom:12px; }
+  .capsule-unlock-date { font-size:12px; color:var(--text-sub); }
+  .capsule-msg-input {
+    width:100%; min-height:80px; border-radius:14px; border:1px solid var(--pink-4);
+    padding:12px; font-size:14px; font-family:inherit; resize:vertical;
+    background:var(--input-bg); color:var(--text); margin:10px 0;
+  }
+  .btn-sm {
+    display:inline-block; padding:8px 20px; border-radius:20px;
+    font-size:13px; font-weight:600; cursor:pointer; border:none;
+    transition:all 0.25s ease; letter-spacing:1px;
+    background:linear-gradient(135deg,#FFB6C1,#E75480); color:#fff;
+  }
+  .btn-sm:active { transform:scale(0.95); }
+
+  /* === Bucket List === */
+  .bucket-item {
+    display:flex; align-items:center; gap:12px; padding:12px 14px;
+    border-radius:14px; cursor:pointer; transition:all 0.25s ease;
+    text-align:left; margin-bottom:4px;
+  }
+  .bucket-item:hover { background:rgba(255,182,193,0.15); }
+  .bucket-check {
+    width:24px; height:24px; border-radius:50%; flex-shrink:0;
+    border:2px solid var(--pink-4); display:flex; align-items:center; justify-content:center;
+    font-size:14px; transition:all 0.25s ease;
+  }
+  .bucket-item.done .bucket-check { background:#E75480; border-color:#E75480; color:#fff; }
+  .bucket-text { font-size:15px; color:var(--text); flex:1; }
+  .bucket-item.done .bucket-text { text-decoration:line-through; color:var(--text-sub); }
+  .progress-bar {
+    width:100%; height:8px; border-radius:4px; background:var(--tag-bg);
+    margin-top:14px; overflow:hidden;
+  }
+  .progress-fill {
+    height:100%; border-radius:4px;
+    background:linear-gradient(135deg,#FFB6C1,#E75480);
+    transition:width 0.5s ease;
+  }
+  .progress-label { font-size:12px; color:var(--text-sub); margin-top:6px; }
+
+  /* === Map === */
+  #loveMap { height:280px; border-radius:16px; z-index:1; margin-top:12px; }
+  .map-add-btn {
+    display:inline-block; margin-top:10px; font-size:13px; color:var(--text-sub);
+    cursor:pointer; padding:6px 16px; border-radius:20px; border:1px solid var(--pink-4);
+    transition:all 0.3s ease;
+  }
+  .map-add-btn:hover { background:var(--pink-4); color:#fff; }
+
+  /* === Voice === */
+  .voice-area { display:flex; align-items:center; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .btn-record {
+    width:56px; height:56px; border-radius:50%; border:none;
+    background:linear-gradient(135deg,#FFB6C1,#E75480); color:#fff;
+    font-size:24px; cursor:pointer; transition:all 0.25s ease; flex-shrink:0;
+  }
+  .btn-record:active { transform:scale(0.9); }
+  .btn-record.recording {
+    animation:recordPulse 1s ease-in-out infinite;
+    background:linear-gradient(135deg,#ff4444,#E75480);
+  }
+  @keyframes recordPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,68,68,0.6)} 50%{box-shadow:0 0 0 16px rgba(255,68,68,0)} }
+  .voice-msgs { width:100%; text-align:left; margin-top:10px; }
+  .voice-msg-item {
+    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    border-radius:12px; background:var(--tag-bg); margin-bottom:6px;
+  }
+  .voice-time { font-size:12px; color:var(--text-sub); flex:1; }
+  .btn-play {
+    background:none; border:1.5px solid var(--pink-5); color:var(--pink-5);
+    padding:4px 14px; border-radius:14px; font-size:12px; cursor:pointer;
+    transition:all 0.2s ease;
+  }
+  .btn-play:hover { background:var(--pink-5); color:#fff; }
+  .btn-delete {
+    background:none; border:none; color:var(--text-sub); font-size:18px;
+    cursor:pointer; padding:0 4px;
   }
 
-  /* === Message modal === */
+  /* === Modal === */
   .modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.3);
-    backdrop-filter: blur(6px);
-    z-index: 100;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.3s ease;
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.3); backdrop-filter:blur(6px);
+    z-index:100; display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity 0.3s ease;
   }
-  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal-overlay.active { opacity:1; pointer-events:auto; }
   .modal-box {
-    background: white;
-    border-radius: 24px;
-    padding: 32px 24px;
-    max-width: 400px; width: 90%;
-    text-align: center;
-    box-shadow: 0 20px 60px rgba(226,43,89,0.2);
+    background:var(--input-bg); border-radius:24px; padding:32px 24px;
+    max-width:400px; width:90%; text-align:center;
+    box-shadow:0 20px 60px rgba(226,43,89,0.2);
+    backdrop-filter: blur(20px); border:1px solid var(--glass-border);
   }
-  .modal-title { font-size: 20px; color: #E75480; margin-bottom: 12px; }
-  .modal-text { font-size: 15px; color: #6B4B5A; line-height: 1.7; margin-bottom: 20px; }
+  .modal-title { font-size:20px; color:#E75480; margin-bottom:12px; }
+  .modal-text { font-size:15px; color:var(--text-mid); line-height:1.7; margin-bottom:20px; }
   .modal-close {
-    background: linear-gradient(135deg, #FFB6C1, #E75480);
-    color: white; border: none; border-radius: 20px;
-    padding: 10px 32px; font-size: 15px; cursor: pointer;
-    transition: transform 0.2s ease;
+    background:linear-gradient(135deg,#FFB6C1,#E75480); color:#fff;
+    border:none; border-radius:20px; padding:10px 32px; font-size:15px; cursor:pointer;
+    transition:transform 0.2s ease;
   }
-  .modal-close:active { transform: scale(0.95); }
+  .modal-close:active { transform:scale(0.95); }
 
-  /* === Cherry blossom burst === */
+  /* Burst */
   .burst {
-    position: fixed;
-    pointer-events: none;
-    z-index: 200;
-    font-size: 24px;
-    animation: burstAnim 2s ease-out forwards;
+    position:fixed; pointer-events:none; z-index:200; font-size:24px;
+    animation:burstAnim 2s ease-out forwards;
   }
   @keyframes burstAnim {
-    0%   { transform: translate(0, 0) scale(1); opacity: 1; }
-    100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+    0%   { transform:translate(0,0) scale(1); opacity:1; }
+    100% { transform:translate(var(--dx),var(--dy)) scale(0); opacity:0; }
   }
 
-  /* === Responsive === */
-  @media (max-width: 480px) {
-    .action-row { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .action-card { padding: 16px 6px; }
-    .action-icon { font-size: 28px; }
-    .photo-grid { grid-template-columns: repeat(2, 1fr); }
-    .card { padding: 20px 16px; }
+  /* Footer */
+  .footer-text { text-align:center; font-size:12px; color:var(--text-sub); letter-spacing:1px; opacity:0.7; }
+
+  .section-label {
+    display:inline-block; padding:4px 12px; border-radius:10px;
+    font-size:11px; font-weight:600; letter-spacing:1px; margin-bottom:8px;
+    background:var(--tag-bg); color:var(--text-sub);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .particle, .burst, .anniversary-badge, .music-item.playing .music-num {
-      animation: none !important;
-    }
+  @media (max-width:480px) {
+    .action-row { grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .action-card { padding:16px 6px; }
+    .action-icon { font-size:28px; }
+    .photo-grid { grid-template-columns:repeat(2,1fr); }
+    .card { padding:20px 16px; }
+    #loveMap { height:220px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .particle,.burst,.anniversary-badge,.music-item.playing .music-num,.btn-record.recording { animation:none!important; }
   }
 </style>
 </head>
 <body>
 
-<!-- Floating particles -->
 <div class="particles" id="particles"></div>
 
-<!-- Main content -->
 <div class="container">
 
   <!-- Title -->
   <div class="card title-card">
     <div class="title-main" id="typewriter"></div>
-    <div class="title-sub">✨ 此生有你 · 皆是温柔 ✨</div>
+    <div class="title-sub" id="nightIndicator">✨ 此生有你 · 皆是温柔 ✨</div>
   </div>
 
-  <!-- Anniversary Counter -->
+  <!-- Counter -->
   <div class="card counter-card">
     <div class="counter-label">💕 我们已经在一起</div>
     <div class="counter-digits">
@@ -352,30 +306,20 @@
       <div class="digit-box"><div class="digit-num" id="minutes">00</div><div class="digit-unit">分</div></div>
       <div class="digit-box"><div class="digit-num" id="seconds">00</div><div class="digit-unit">秒</div></div>
     </div>
-    <div class="anniversary-badge">🎉 170天纪念日</div>
+    <div class="anniversary-badge" id="anniversaryBadge">🎉 170天纪念日</div>
   </div>
 
-  <!-- Action Cards -->
+  <!-- Actions -->
   <div class="action-row">
-    <div class="card action-card" id="btnFlower" title="送花给她">
-      <span class="action-icon">🌹</span>
-      <div class="action-label">送花</div>
-      <div class="flower-count" id="flowerCount">已送 0 朵</div>
-    </div>
-    <div class="card action-card" id="btnMessage" title="查看留言">
-      <span class="action-icon">💌</span>
-      <div class="action-label">留言</div>
-    </div>
-    <div class="card action-card" id="btnMemory" title="回忆照片">
-      <span class="action-icon">📷</span>
-      <div class="action-label">回忆</div>
-    </div>
+    <div class="card action-card" id="btnFlower"><span class="action-icon">🌹</span><div class="action-label">送花</div><div class="flower-count" id="flowerCount">已送 0 朵</div></div>
+    <div class="card action-card" id="btnMessage"><span class="action-icon">💌</span><div class="action-label">留言</div></div>
+    <div class="card action-card" id="btnMemory"><span class="action-icon">📷</span><div class="action-label">回忆</div></div>
   </div>
 
   <!-- Photo Wall -->
   <div class="card">
-    <div style="font-size:16px;font-weight:700;color:#5A3E4B;margin-bottom:6px;">📸 我们的瞬间</div>
-    <div style="font-size:12px;color:#C08497;margin-bottom:16px;">点击照片位上传你们的回忆吧</div>
+    <div class="card-head">📸 我们的瞬间</div>
+    <div class="card-sub">点击照片位上传你们的回忆吧</div>
     <div class="photo-grid" id="photoGrid">
       <div class="photo-placeholder" data-idx="0"><span>📷</span><span class="photo-label">我们的合照</span></div>
       <div class="photo-placeholder" data-idx="1"><span>🌸</span><span class="photo-label">第一次约会</span></div>
@@ -387,28 +331,78 @@
     <input type="file" accept="image/*" id="fileInput" style="display:none">
   </div>
 
-  <!-- Daily Quote -->
+  <!-- Quote -->
   <div class="card">
     <div class="quote-text" id="quoteText"></div>
     <div class="quote-refresh" id="btnQuote">🔄 换一句</div>
   </div>
 
-  <!-- Music Box -->
+  <!-- Time Capsule -->
+  <div class="card" id="capsuleCard">
+    <div class="section-label">💌 时光胶囊</div>
+    <div class="capsule-locked" id="capsuleLocked">
+      <span class="capsule-icon">🔒</span>
+      <div style="font-size:15px;color:var(--text);font-weight:600;">一封封存的情书</div>
+      <div class="capsule-countdown" id="capsuleCountdown"></div>
+      <div class="capsule-unlock-date">📅 将于 2026年12月8日（一周年）解锁</div>
+    </div>
+    <div class="capsule-unlocked" id="capsuleUnlocked" style="display:none;">
+      <span class="capsule-icon">💝</span>
+      <div style="font-size:15px;color:var(--text);font-weight:600;margin-bottom:8px;">🎉 时光胶囊已解锁！</div>
+      <div style="font-size:14px;color:var(--text-mid);line-height:1.7;white-space:pre-wrap;" id="capsuleContent"></div>
+    </div>
+    <div style="margin-top:12px;">
+      <textarea class="capsule-msg-input" id="capsuleInput" placeholder="写下你想对一年后的她说的话..."></textarea>
+      <button class="btn-sm" id="capsuleSaveBtn">💾 封存情书</button>
+      <div style="font-size:11px;color:var(--text-sub);margin-top:6px;" id="capsuleStatus"></div>
+    </div>
+  </div>
+
+  <!-- Bucket List -->
   <div class="card">
-    <div style="font-size:16px;font-weight:700;color:#5A3E4B;margin-bottom:4px;">🎵 点一首歌给你</div>
-    <div style="font-size:12px;color:#C08497;margin-bottom:14px;">2026 最火浪漫情歌 · 点击播放</div>
+    <div class="section-label">📝 恋爱小事清单</div>
+    <div class="card-head">一起完成的小事</div>
+    <div id="bucketList"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-label" id="progressLabel">完成了 0/10</div>
+  </div>
+
+  <!-- Love Map -->
+  <div class="card">
+    <div class="section-label">🗺️ 爱的足迹地图</div>
+    <div class="card-head">我们一起去过的地方</div>
+    <div class="card-sub">点击地图添加你们的足迹</div>
+    <div id="loveMap"></div>
+    <div class="map-add-btn" id="mapAddBtn">📍 在此添加足迹</div>
+    <div style="margin-top:8px;">
+      <input type="text" id="mapPlaceName" placeholder="地点名称（如：第一次约会的地方）" style="width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--pink-4);font-size:13px;background:var(--input-bg);color:var(--text);text-align:center;">
+    </div>
+  </div>
+
+  <!-- Voice -->
+  <div class="card">
+    <div class="section-label">🔊 语音留言</div>
+    <div class="card-head">录一段话给她听</div>
+    <div class="card-sub">最长 30 秒，保存在浏览器里</div>
+    <div class="voice-area">
+      <button class="btn-record" id="btnRecord" title="点击录音">🎤</button>
+      <span style="font-size:13px;color:var(--text-sub);" id="recordHint">点击开始录音</span>
+    </div>
+    <div class="voice-msgs" id="voiceMsgs"></div>
+  </div>
+
+  <!-- Music -->
+  <div class="card">
+    <div class="section-label">🎵 点一首歌给你</div>
+    <div class="card-sub">2026 最火浪漫情歌 · 点击播放</div>
     <div class="music-list" id="musicList"></div>
     <div id="aplayer" style="margin-top:12px;"></div>
   </div>
 
-  <!-- Footer -->
-  <div class="footer-text">
-    💝 Made with love for 邓可凡 · 2026 💝
-  </div>
-
+  <div class="footer-text">💝 Made with love for 邓可凡 · 2026 💝</div>
 </div>
 
-<!-- Message Modal -->
+<!-- Modal -->
 <div class="modal-overlay" id="modal">
   <div class="modal-box">
     <div class="modal-title" id="modalTitle"></div>
@@ -417,11 +411,55 @@
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
 <script>
-// ======= Anniversary Counter =======
-const START_DATE = new Date('2025-12-08T00:00:00');
+// ==================== NIGHT MODE ====================
+function updateNightMode() {
+  const hour = new Date().getHours();
+  const isNight = hour >= 19 || hour < 6;
+  document.body.classList.toggle('night-mode', isNight);
+  document.getElementById('nightIndicator').textContent = isNight
+    ? '🌙 夜深了 · 梦里见 🌙' : '✨ 此生有你 · 皆是温柔 ✨';
+}
+updateNightMode();
+setInterval(updateNightMode, 60000);
 
+// ==================== PARTICLES ====================
+const dayEmojis = ['🌸','💮','💕','✨','🩷','🌷','💖','🦋','💗','🎀'];
+const nightEmojis = ['⭐','🌙','✨','💫','🌟','🪐','🔮','💜','🌠','💤'];
+const particleContainer = document.getElementById('particles');
+let particleEmojis = [...dayEmojis];
+
+function getParticleEmojis() {
+  return document.body.classList.contains('night-mode') ? nightEmojis : dayEmojis;
+}
+function refreshParticles() {
+  particleContainer.innerHTML = '';
+  const emojis = getParticleEmojis();
+  for (let i = 0; i < 35; i++) {
+    const el = document.createElement('span');
+    el.className = 'particle';
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = Math.random() * 100 + '%';
+    el.style.fontSize = (14 + Math.random() * 22) + 'px';
+    el.style.animationDuration = (8 + Math.random() * 18) + 's';
+    el.style.animationDelay = Math.random() * 15 + 's';
+    particleContainer.appendChild(el);
+  }
+}
+refreshParticles();
+// Re-check particles every 2 min
+setInterval(() => {
+  const currentEmojis = getParticleEmojis();
+  if (currentEmojis[0] !== particleEmojis[0]) {
+    particleEmojis = currentEmojis;
+    refreshParticles();
+  }
+}, 120000);
+
+// ==================== ANNIVERSARY COUNTER ====================
+const START_DATE = new Date('2025-12-08T00:00:00');
 function updateCounter() {
   const now = new Date();
   const diff = now - START_DATE;
@@ -430,16 +468,23 @@ function updateCounter() {
   const h = Math.floor((totalSeconds % 86400) / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
-
   document.getElementById('days').textContent = d;
-  document.getElementById('hours').textContent = String(h).padStart(2, '0');
-  document.getElementById('minutes').textContent = String(m).padStart(2, '0');
-  document.getElementById('seconds').textContent = String(s).padStart(2, '0');
+  document.getElementById('hours').textContent = String(h).padStart(2,'0');
+  document.getElementById('minutes').textContent = String(m).padStart(2,'0');
+  document.getElementById('seconds').textContent = String(s).padStart(2,'0');
+
+  // Update anniversary badge
+  const badge = document.getElementById('anniversaryBadge');
+  if (d >= 365) badge.textContent = '🎉 ' + Math.floor(d/365) + '周年纪念日！';
+  else if (d >= 300) badge.textContent = '🎉 ' + d + '天 · 一周年倒计时！';
+  else if (d >= 200) badge.textContent = '🎉 ' + d + '天纪念日';
+  else if (d >= 100) badge.textContent = '🎉 ' + d + '天纪念日';
+  else badge.textContent = '🎉 ' + d + '天纪念日';
 }
 updateCounter();
 setInterval(updateCounter, 1000);
 
-// ======= Typewriter =======
+// ==================== TYPEWRITER ====================
 const titleText = '邓可凡 ❤ 专属小窝';
 const twEl = document.getElementById('typewriter');
 let twIdx = 0;
@@ -452,35 +497,17 @@ function typeWriter() {
 }
 setTimeout(typeWriter, 400);
 
-// ======= Floating Particles =======
-const particleContainer = document.getElementById('particles');
-const emojis = ['🌸', '💮', '💕', '✨', '🩷', '🌷', '💖', '🦋', '💗', '🎀'];
-for (let i = 0; i < 35; i++) {
-  const el = document.createElement('span');
-  el.className = 'particle';
-  el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-  el.style.left = Math.random() * 100 + '%';
-  el.style.fontSize = (14 + Math.random() * 22) + 'px';
-  el.style.animationDuration = (8 + Math.random() * 18) + 's';
-  el.style.animationDelay = Math.random() * 15 + 's';
-  particleContainer.appendChild(el);
-}
-
-// ======= Flower Button =======
+// ==================== FLOWER ====================
 let flowerTotal = parseInt(localStorage.getItem('flowerTotal_dkf') || '0');
 document.getElementById('flowerCount').textContent = '已送 ' + flowerTotal + ' 朵';
-
 document.getElementById('btnFlower').addEventListener('click', function(e) {
   flowerTotal++;
   localStorage.setItem('flowerTotal_dkf', flowerTotal);
   document.getElementById('flowerCount').textContent = '已送 ' + flowerTotal + ' 朵';
-
-  // Burst animation
   const rect = this.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
   const cy = rect.top + rect.height / 2;
-  const burstEmojis = ['🌹', '💐', '🌸', '💮', '🌷', '💖', '✨', '🩷', '💗', '🎀', '💝', '🌺'];
-
+  const burstEmojis = ['🌹','💐','🌸','💮','🌷','💖','✨','🩷','💗','🎀','💝','🌺'];
   for (let i = 0; i < 16; i++) {
     const el = document.createElement('span');
     el.className = 'burst';
@@ -494,16 +521,15 @@ document.getElementById('btnFlower').addEventListener('click', function(e) {
   }
 });
 
-// ======= Message Button =======
+// ==================== MESSAGE ====================
 const messages = [
-  { title: '💌 给我的女孩', text: '邓可凡，遇见你是我最大的幸运。每一天都想跟你说，你笑起来的样子真好看，全世界都不及你。' },
-  { title: '💕 想对你说', text: '谢谢你出现在我的生命里，让平淡的日子都闪闪发光。你的每一个小情绪我都想小心收藏。' },
-  { title: '🌟 悄悄话', text: '不管今天工作多累，一想到回家能看到你的消息，就觉得一切都值得了。你就是我的充电宝。' },
-  { title: '🩷 真心话', text: '170天了，每天都比昨天更喜欢你一点。不是一时兴起，是来日方长。邓可凡，你是我最想留住的幸运。' },
-  { title: '🌸 小承诺', text: '我会努力成为更好的人，给你更好的生活。你负责美丽可爱，我负责宠你上天。拉钩~' },
+  { title:'💌 给我的女孩', text:'邓可凡，遇见你是我最大的幸运。每一天都想跟你说，你笑起来的样子真好看，全世界都不及你。' },
+  { title:'💕 想对你说', text:'谢谢你出现在我的生命里，让平淡的日子都闪闪发光。你的每一个小情绪我都想小心收藏。' },
+  { title:'🌟 悄悄话', text:'不管今天工作多累，一想到回家能看到你的消息，就觉得一切都值得了。你就是我的充电宝。' },
+  { title:'🩷 真心话', text:'每天都比昨天更喜欢你一点。不是一时兴起，是来日方长。邓可凡，你是我最想留住的幸运。' },
+  { title:'🌸 小承诺', text:'我会努力成为更好的人，给你更好的生活。你负责美丽可爱，我负责宠你上天。拉钩~' },
 ];
 let lastMsgIdx = -1;
-
 document.getElementById('btnMessage').addEventListener('click', function() {
   let idx;
   do { idx = Math.floor(Math.random() * messages.length); } while (idx === lastMsgIdx && messages.length > 1);
@@ -512,64 +538,43 @@ document.getElementById('btnMessage').addEventListener('click', function() {
   document.getElementById('modalText').textContent = messages[idx].text;
   document.getElementById('modal').classList.add('active');
 });
-
-// ======= Memory Button =======
 document.getElementById('btnMemory').addEventListener('click', function() {
-  document.getElementById('photoGrid').scrollIntoView({ behavior: 'smooth' });
-  // Flash the photo grid
+  document.getElementById('photoGrid').scrollIntoView({ behavior:'smooth' });
   const grid = document.getElementById('photoGrid');
   grid.style.boxShadow = '0 0 0 6px rgba(255,105,180,0.4)';
   setTimeout(() => { grid.style.boxShadow = ''; }, 800);
 });
+document.getElementById('modalClose').addEventListener('click', () => document.getElementById('modal').classList.remove('active'));
+document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
 
-// ======= Modal close =======
-document.getElementById('modalClose').addEventListener('click', function() {
-  document.getElementById('modal').classList.remove('active');
-});
-document.getElementById('modal').addEventListener('click', function(e) {
-  if (e.target === this) this.classList.remove('active');
-});
-
-// ======= Photo Upload =======
+// ==================== PHOTO UPLOAD ====================
 let currentPhotoIdx = -1;
 const fileInput = document.getElementById('fileInput');
 const photoGrid = document.getElementById('photoGrid');
-
-// Load saved photos from localStorage
 function loadPhotos() {
   const saved = JSON.parse(localStorage.getItem('photos_dkf') || '{}');
   Object.keys(saved).forEach(idx => {
-    const placeholder = photoGrid.querySelector(`[data-idx="${idx}"]`);
-    if (placeholder && saved[idx]) {
-      const img = document.createElement('img');
-      img.src = saved[idx];
-      placeholder.innerHTML = '';
-      placeholder.appendChild(img);
+    const ph = photoGrid.querySelector(`[data-idx="${idx}"]`);
+    if (ph && saved[idx]) {
+      const img = document.createElement('img'); img.src = saved[idx];
+      ph.innerHTML = ''; ph.appendChild(img);
     }
   });
 }
 loadPhotos();
-
 photoGrid.addEventListener('click', function(e) {
-  const placeholder = e.target.closest('.photo-placeholder');
-  if (!placeholder) return;
-  currentPhotoIdx = parseInt(placeholder.dataset.idx);
+  const ph = e.target.closest('.photo-placeholder');
+  if (!ph) return;
+  currentPhotoIdx = parseInt(ph.dataset.idx);
   fileInput.click();
 });
-
 fileInput.addEventListener('change', function() {
   if (!this.files || !this.files[0]) return;
   const reader = new FileReader();
   reader.onload = function(e) {
     const dataUrl = e.target.result;
-    const placeholder = photoGrid.querySelector(`[data-idx="${currentPhotoIdx}"]`);
-    if (placeholder) {
-      const img = document.createElement('img');
-      img.src = dataUrl;
-      placeholder.innerHTML = '';
-      placeholder.appendChild(img);
-    }
-    // Save to localStorage
+    const ph = photoGrid.querySelector(`[data-idx="${currentPhotoIdx}"]`);
+    if (ph) { const img = document.createElement('img'); img.src = dataUrl; ph.innerHTML = ''; ph.appendChild(img); }
     const saved = JSON.parse(localStorage.getItem('photos_dkf') || '{}');
     saved[currentPhotoIdx] = dataUrl;
     localStorage.setItem('photos_dkf', JSON.stringify(saved));
@@ -578,21 +583,20 @@ fileInput.addEventListener('change', function() {
   this.value = '';
 });
 
-// ======= Daily Quote =======
+// ==================== DAILY QUOTE ====================
 const quotes = [
-  '“喜欢你不是三分钟热度，是蓄谋已久后的深思熟虑。”',
-  '“世界很大，但我的心很小，只装得下你一个人。”',
-  '“你不用多好，我喜欢就好；我没有很好，你不嫌弃就好。”',
-  '“邓可凡，你的名字是我听过最短的情诗。”',
-  '“想把世界上所有美好都给你，但发现世界上最好的就是你。”',
-  '“不是在最好的时光遇见了你，而是遇见了你，才是我最好的时光。”',
-  '“余生很长，但我只想和你一起虚度光阴。”',
-  '“今天也想见到你，不管什么天气，不管什么距离。”',
-  '“你是我疲惫生活里的英雄梦想。”',
-  '“所谓幸福，就是每天醒来，你和阳光都在。”',
+  '"喜欢你不是三分钟热度，是蓄谋已久后的深思熟虑。"',
+  '"世界很大，但我的心很小，只装得下你一个人。"',
+  '"你不用多好，我喜欢就好；我没有很好，你不嫌弃就好。"',
+  '"邓可凡，你的名字是我听过最短的情诗。"',
+  '"想把世界上所有美好都给你，但发现世界上最好的就是你。"',
+  '"不是在最好的时光遇见了你，而是遇见了你，才是我最好的时光。"',
+  '"余生很长，但我只想和你一起虚度光阴。"',
+  '"今天也想见到你，不管什么天气，不管什么距离。"',
+  '"你是我疲惫生活里的英雄梦想。"',
+  '"所谓幸福，就是每天醒来，你和阳光都在。"',
 ];
 let lastQuoteIdx = -1;
-
 function refreshQuote() {
   let idx;
   do { idx = Math.floor(Math.random() * quotes.length); } while (idx === lastQuoteIdx && quotes.length > 1);
@@ -604,112 +608,303 @@ function refreshQuote() {
 refreshQuote();
 document.getElementById('btnQuote').addEventListener('click', refreshQuote);
 
-// ======= Music Box with APlayer + Meting API =======
-const playlist = [
-  { title: '晚风告白', artist: '星野', keyword: '晚风告白 星野' },
-  { title: '心动信号', artist: '汪苏泷', keyword: '心动信号' },
-  { title: '小美满', artist: '周深', keyword: '小美满 周深' },
-  { title: '恋人', artist: '李荣浩', keyword: '恋人 李荣浩' },
-  { title: '星河入梦', artist: '古风', keyword: '星河入梦' },
-  { title: '奔赴', artist: '司南', keyword: '奔赴 司南' },
-];
+// ==================== TIME CAPSULE ====================
+const CAPSULE_UNLOCK = new Date('2026-12-08T00:00:00');
+const capsuleKey = 'capsule_dkf';
 
-let ap = null;
-let currentTrack = -1;
-const musicList = document.getElementById('musicList');
+function updateCapsule() {
+  const now = new Date();
+  const saved = localStorage.getItem(capsuleKey);
+  const capsuleInput = document.getElementById('capsuleInput');
+  const saveBtn = document.getElementById('capsuleSaveBtn');
+  const status = document.getElementById('capsuleStatus');
+  const countdown = document.getElementById('capsuleCountdown');
+  const locked = document.getElementById('capsuleLocked');
+  const unlocked = document.getElementById('capsuleUnlocked');
+  const content = document.getElementById('capsuleContent');
 
-playlist.forEach((song, idx) => {
-  const item = document.createElement('div');
-  item.className = 'music-item';
-  item.dataset.idx = idx;
-  item.innerHTML = `
-    <div class="music-num">${idx + 1}</div>
-    <div class="music-info">
-      <div class="music-title">${song.title}</div>
-      <div class="music-artist">${song.artist}</div>
-    </div>
-    <span class="music-playing-indicator">▶ 播放中</span>
-  `;
-  musicList.appendChild(item);
+  if (now >= CAPSULE_UNLOCK) {
+    locked.style.display = 'none';
+    unlocked.style.display = 'block';
+    if (saved) {
+      content.textContent = saved;
+      capsuleInput.style.display = 'none';
+      saveBtn.style.display = 'none';
+      status.textContent = '';
+    } else {
+      content.textContent = '（你还没有封存过情书哦~）';
+    }
+    return;
+  }
+
+  // Still locked - show countdown
+  locked.style.display = 'block';
+  unlocked.style.display = 'none';
+  const diff = CAPSULE_UNLOCK - now;
+  const dd = Math.floor(diff / 86400000);
+  const hh = Math.floor((diff % 86400000) / 3600000);
+  const mm = Math.floor((diff % 3600000) / 60000);
+  countdown.textContent = '距离解锁还有 ' + dd + ' 天 ' + hh + ' 时 ' + mm + ' 分';
+
+  if (saved) {
+    capsuleInput.value = saved;
+    status.textContent = '✅ 情书已封存，等待一周年那天自动解锁...';
+  } else {
+    capsuleInput.placeholder = '写下你想对一年后的她（或自己）说的话...';
+  }
+}
+updateCapsule();
+setInterval(updateCapsule, 60000);
+
+document.getElementById('capsuleSaveBtn').addEventListener('click', function() {
+  const val = document.getElementById('capsuleInput').value.trim();
+  if (!val) { document.getElementById('capsuleStatus').textContent = '⚠️ 写点什么再封存吧~'; return; }
+  localStorage.setItem(capsuleKey, val);
+  document.getElementById('capsuleStatus').textContent = '✅ 情书已封存！一周年那天会自动解锁。';
+  updateCapsule();
 });
 
+// ==================== BUCKET LIST ====================
+const defaultBucket = [
+  '一起看一次日出', '一起做饭', '一起养一只宠物',
+  '一起去看海', '给对方写一封手写信', '一起拍一套写真',
+  '一起看一场演唱会', '一起种一棵植物', '一起露营看星星',
+  '对彼此说100遍我爱你',
+];
+const bucketKey = 'bucket_dkf';
+let bucketData = JSON.parse(localStorage.getItem(bucketKey)) || defaultBucket.map(t => ({ text: t, done: false }));
+
+function renderBucket() {
+  const container = document.getElementById('bucketList');
+  container.innerHTML = '';
+  bucketData.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'bucket-item' + (item.done ? ' done' : '');
+    div.innerHTML = `
+      <div class="bucket-check">${item.done ? '✓' : ''}</div>
+      <div class="bucket-text">${item.text}</div>
+    `;
+    div.addEventListener('click', function() {
+      bucketData[idx].done = !bucketData[idx].done;
+      localStorage.setItem(bucketKey, JSON.stringify(bucketData));
+      renderBucket();
+    });
+    container.appendChild(div);
+  });
+  const doneCount = bucketData.filter(i => i.done).length;
+  const pct = bucketData.length ? Math.round(doneCount / bucketData.length * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = '完成了 ' + doneCount + '/' + bucketData.length + ' (' + pct + '%)';
+}
+renderBucket();
+
+// ==================== LOVE MAP ====================
+let loveMap;
+const mapKey = 'mapMarkers_dkf';
+let mapMarkers = JSON.parse(localStorage.getItem(mapKey)) || [];
+let pendingLatLng = null;
+
+function initMap() {
+  loveMap = L.map('loveMap').setView([30.5728, 104.0668], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 18,
+  }).addTo(loveMap);
+
+  // Load saved markers
+  mapMarkers.forEach(m => {
+    L.marker([m.lat, m.lng]).addTo(loveMap).bindPopup(m.name);
+  });
+
+  // Click to pick location
+  loveMap.on('click', function(e) {
+    pendingLatLng = e.latlng;
+    document.getElementById('mapPlaceName').focus();
+    // Visual feedback
+    document.getElementById('loveMap').style.boxShadow = '0 0 0 4px rgba(255,105,180,0.5)';
+    setTimeout(() => { document.getElementById('loveMap').style.boxShadow = ''; }, 800);
+  });
+}
+
+document.getElementById('mapAddBtn').addEventListener('click', function() {
+  const name = document.getElementById('mapPlaceName').value.trim();
+  if (!pendingLatLng) {
+    alert('请先在地图上点击一个位置！');
+    return;
+  }
+  if (!name) {
+    alert('请输入地点名称！');
+    return;
+  }
+  const marker = { lat: pendingLatLng.lat, lng: pendingLatLng.lng, name: name };
+  mapMarkers.push(marker);
+  localStorage.setItem(mapKey, JSON.stringify(mapMarkers));
+  L.marker([marker.lat, marker.lng]).addTo(loveMap).bindPopup(marker.name);
+  document.getElementById('mapPlaceName').value = '';
+  pendingLatLng = null;
+});
+
+// ==================== VOICE MESSAGE ====================
+const voiceKey = 'voices_dkf';
+let voiceMsgs = JSON.parse(localStorage.getItem(voiceKey)) || [];
+let mediaRecorder, audioChunks, recordTimer;
+const btnRecord = document.getElementById('btnRecord');
+const recordHint = document.getElementById('recordHint');
+const voiceContainer = document.getElementById('voiceMsgs');
+
+function renderVoices() {
+  voiceContainer.innerHTML = '';
+  voiceMsgs.forEach((msg, idx) => {
+    const div = document.createElement('div');
+    div.className = 'voice-msg-item';
+    div.innerHTML = `
+      <span>🎙️</span>
+      <span class="voice-time">${msg.date}</span>
+      <button class="btn-play" data-idx="${idx}">▶ 播放</button>
+      <button class="btn-delete" data-idx="${idx}">×</button>
+    `;
+    voiceContainer.appendChild(div);
+  });
+  // Play handlers
+  voiceContainer.querySelectorAll('.btn-play').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const idx = parseInt(this.dataset.idx);
+      const audio = new Audio(voiceMsgs[idx].data);
+      audio.play();
+      this.textContent = '⏸ 播放中';
+      audio.onended = () => { this.textContent = '▶ 播放'; };
+    });
+  });
+  voiceContainer.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const idx = parseInt(this.dataset.idx);
+      voiceMsgs.splice(idx, 1);
+      localStorage.setItem(voiceKey, JSON.stringify(voiceMsgs));
+      renderVoices();
+    });
+  });
+}
+renderVoices();
+
+btnRecord.addEventListener('click', async function() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    // Stop recording
+    mediaRecorder.stop();
+    btnRecord.classList.remove('recording');
+    btnRecord.textContent = '🎤';
+    recordHint.textContent = '点击开始录音';
+    clearInterval(recordTimer);
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      const reader = new FileReader();
+      reader.onload = function() {
+        const now = new Date();
+        const dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+        voiceMsgs.push({ date: dateStr, data: reader.result });
+        voiceMsgs = voiceMsgs.slice(-5); // Keep last 5
+        localStorage.setItem(voiceKey, JSON.stringify(voiceMsgs));
+        renderVoices();
+      };
+      reader.readAsDataURL(blob);
+      stream.getTracks().forEach(t => t.stop());
+      recordHint.textContent = '录制完成！共 ' + audioChunks.length + ' 段';
+    };
+
+    mediaRecorder.start();
+    btnRecord.classList.add('recording');
+    btnRecord.textContent = '⏹';
+    recordHint.textContent = '正在录音...';
+
+    // Auto-stop after 30s
+    let sec = 0;
+    recordTimer = setInterval(() => {
+      sec++;
+      recordHint.textContent = '正在录音... ' + sec + ' 秒';
+      if (sec >= 30) {
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+          btnRecord.classList.remove('recording');
+          btnRecord.textContent = '🎤';
+          clearInterval(recordTimer);
+          recordHint.textContent = '已达到 30 秒上限';
+        }
+      }
+    }, 1000);
+
+  } catch (err) {
+    recordHint.textContent = '⚠️ 无法访问麦克风，请检查浏览器权限';
+    console.error(err);
+  }
+});
+
+// ==================== MUSIC ====================
+const playlist = [
+  { title:'晚风告白', artist:'星野', keyword:'晚风告白 星野' },
+  { title:'心动信号', artist:'汪苏泷', keyword:'心动信号' },
+  { title:'小美满', artist:'周深', keyword:'小美满 周深' },
+  { title:'恋人', artist:'李荣浩', keyword:'恋人 李荣浩' },
+  { title:'星河入梦', artist:'古风', keyword:'星河入梦' },
+  { title:'奔赴', artist:'司南', keyword:'奔赴 司南' },
+];
+let ap = null, currentTrack = -1;
+const musicList = document.getElementById('musicList');
+playlist.forEach((song, idx) => {
+  const item = document.createElement('div');
+  item.className = 'music-item'; item.dataset.idx = idx;
+  item.innerHTML = `<div class="music-num">${idx+1}</div><div class="music-info"><div class="music-title">${song.title}</div><div class="music-artist">${song.artist}</div></div><span class="music-playing-indicator">▶ 播放中</span>`;
+  musicList.appendChild(item);
+});
 async function fetchAndPlay(idx) {
   const song = playlist[idx];
-
-  // Try NetEase API directly (works from browser in China)
   try {
     const res = await fetch(`https://music.163.com/api/search/get?type=1&limit=1&s=${encodeURIComponent(song.keyword)}`);
     const data = await res.json();
-    if (data.result && data.result.songs && data.result.songs.length > 0) {
+    if (data.result?.songs?.length) {
       const s = data.result.songs[0];
       song.url = `https://music.163.com/song/media/outer/url?id=${s.id}.mp3`;
       song.pic = s.al?.picUrl || '';
       song.title = s.name || song.title;
-      song.artist = s.ar?.map(a => a.name).join('/') || song.artist;
+      song.artist = s.ar?.map(a=>a.name).join('/') || song.artist;
     }
-  } catch (e) {
-    console.warn('NetEase search failed, trying Meting API...');
+  } catch(e) {
     try {
-      const apiUrl = `https://api.i-meto.com/meting/api?server=netease&type=search&id=${encodeURIComponent(song.keyword)}`;
-      const res = await fetch(apiUrl);
+      const res = await fetch(`https://api.i-meto.com/meting/api?server=netease&type=search&id=${encodeURIComponent(song.keyword)}`);
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        const result = data[0];
-        song.url = result.url;
-        song.pic = result.pic;
-        song.title = result.title || song.title;
-        song.artist = result.author || song.artist;
+      if (Array.isArray(data) && data.length) {
+        song.url = data[0].url; song.pic = data[0].pic;
+        song.title = data[0].title || song.title; song.artist = data[0].author || song.artist;
       }
-    } catch (e2) {
-      console.warn('Meting API also failed:', e2);
-    }
+    } catch(e2) { console.warn('Music fetch failed'); }
   }
   return song;
 }
-
 async function playTrack(idx) {
-  document.querySelectorAll('.music-item').forEach(el => el.classList.remove('playing'));
+  document.querySelectorAll('.music-item').forEach(el=>el.classList.remove('playing'));
   musicList.children[idx].classList.add('playing');
   currentTrack = idx;
-
   if (ap) { ap.destroy(); ap = null; }
-
   const apContainer = document.getElementById('aplayer');
-  apContainer.innerHTML = '<div style="text-align:center;color:#C08497;padding:12px;">🎵 正在加载歌曲...</div>';
-
+  apContainer.innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:12px;">🎵 正在加载歌曲...</div>';
   const song = await fetchAndPlay(idx);
-
   apContainer.innerHTML = '';
   ap = new APlayer({
-    container: apContainer,
-    mini: false,
-    autoplay: true,
-    loop: 'all',
-    preload: 'auto',
-    mutex: true,
-    theme: '#E75480',
-    audio: [{
-      name: song.title,
-      artist: song.artist,
-      url: song.url || '',
-      cover: song.pic || '',
-      lrc: '',
-    }]
+    container: apContainer, mini: false, autoplay: true, loop:'all',
+    preload:'auto', mutex: true, theme:'#E75480',
+    audio: [{ name:song.title, artist:song.artist, url:song.url||'', cover:song.pic||'', lrc:'' }]
   });
-
   if (!song.url) {
-    apContainer.innerHTML = `
-      <div style="text-align:center;padding:12px;">
-        <div style="color:#C08497;font-size:13px;margin-bottom:8px;">😢 无法自动获取播放源</div>
-        <a href="https://music.163.com/#/search/m/?s=${encodeURIComponent(song.keyword)}"
-           target="_blank" rel="noopener"
-           style="color:#E75480;text-decoration:none;font-size:14px;font-weight:600;">
-           👉 点击在网易云音乐中打开《${song.title}》
-        </a>
-      </div>`;
+    apContainer.innerHTML = `<div style="text-align:center;padding:12px;"><div style="color:var(--text-sub);font-size:13px;margin-bottom:8px;">😢 无法自动获取播放源</div><a href="https://music.163.com/#/search/m/?s=${encodeURIComponent(song.keyword)}" target="_blank" rel="noopener" style="color:#E75480;text-decoration:none;font-size:14px;font-weight:600;">👉 点击在网易云音乐中打开《${song.title}》</a></div>`;
   }
 }
-
 musicList.addEventListener('click', function(e) {
   const item = e.target.closest('.music-item');
   if (!item) return;
@@ -718,12 +913,27 @@ musicList.addEventListener('click', function(e) {
   playTrack(idx);
 });
 
-// ======= Keyboard shortcut =======
+// ==================== KEYBOARD SHORTCUT ====================
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'f' || e.key === 'F') {
-    document.getElementById('btnFlower').click();
-  }
+  if (e.key === 'f' || e.key === 'F') document.getElementById('btnFlower').click();
 });
+
+// ==================== INIT MAP ON DEMAND ====================
+// Lazy init map when scrolled near it
+let mapInited = false;
+const mapObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !mapInited) {
+      initMap();
+      mapInited = true;
+      mapObserver.disconnect();
+    }
+  });
+}, { rootMargin: '200px' });
+const mapCard = document.getElementById('loveMap').closest('.card');
+if (mapCard) mapObserver.observe(mapCard);
+// Fallback: init after 3s anyway
+setTimeout(() => { if (!mapInited) { initMap(); mapInited = true; } }, 3000);
 </script>
 
 </body>
