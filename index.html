@@ -777,72 +777,75 @@ function escapeHtml(s) {
 // Expose delete function globally for popup onclick
 window._delMarker = delMarker;
 
-// ========== Geocode search ==========
-async function geocodeSearch(query) {
-  // Try Amap geocoding first (no key needed for POI search)
-  try {
-    var url = 'https://restapi.amap.com/v5/place/text?parameters=' + encodeURIComponent(JSON.stringify({
-      keywords: query,
-      region: '全国',
-      page_size: 1,
-      show_fields: 'business_area,children'
-    }));
-    // Amap V5 API requires key, fall back to V3 POI search
-    url = 'https://restapi.amap.com/v3/place/text?keywords=' + encodeURIComponent(query) + '&offset=1&page=1&key=&region=全国&extensions=base';
-    var res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-    var data = await res.json();
-    if (data.status === '1' && data.pois && data.pois.length > 0) {
-      var p = data.pois[0];
-      return { lat: parseFloat(p.location.split(',')[1]), lng: parseFloat(p.location.split(',')[0]), name: p.name, addr: p.address };
-    }
-    throw new Error('Amap failed');
-  } catch(e1) {
-    // Fallback: Nominatim (OSM)
-    try {
-      var res2 = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query), { signal: AbortSignal.timeout(5000) });
-      var data2 = await res2.json();
-      if (data2.length > 0) {
-        return { lat: parseFloat(data2[0].lat), lng: parseFloat(data2[0].lon), name: data2[0].display_name.split(',')[0], addr: '' };
-      }
-    } catch(e2) { /* ignore */ }
-  }
-  return null;
-}
-
 async function searchAndFly() {
   var query = document.getElementById('mapSearchInput').value.trim();
   if (!query) {
     document.getElementById('selectedHint').textContent = '⚠️ 请输入地点名称';
     return;
   }
-  document.getElementById('selectedHint').textContent = '🔍 正在搜索：' + query + '...';
-  document.getElementById('mapSearchBtn').textContent = '⏳';
-  document.getElementById('mapSearchBtn').disabled = true;
+  var hint = document.getElementById('selectedHint');
+  var btn = document.getElementById('mapSearchBtn');
+  hint.textContent = '🔍 正在搜索：' + query + '...（尝试 API 1/3）';
+  btn.textContent = '⏳'; btn.disabled = true;
 
-  var result = await geocodeSearch(query);
+  // Try 3 different free geocoding APIs
+  var result = null;
 
-  document.getElementById('mapSearchBtn').textContent = '🔍 搜索';
-  document.getElementById('mapSearchBtn').disabled = false;
+  // 1. Open-Meteo (fast, global, no key)
+  hint.textContent = '🔍 正在搜索：' + query + '...（尝试 API 1/3）';
+  try {
+    var res0 = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(query) + '&count=3&language=zh&format=json', { signal: AbortSignal.timeout(6000) });
+    var data0 = await res0.json();
+    if (data0.results && data0.results.length > 0) {
+      var r = data0.results[0];
+      result = { lat: r.latitude, lng: r.longitude, name: r.name, addr: [r.admin1, r.country].filter(Boolean).join(', ') };
+    }
+  } catch(e) { console.warn('API 1 failed'); }
+
+  // 2. Nominatim (OSM, detailed results)
+  if (!result) {
+    hint.textContent = '🔍 正在搜索：' + query + '...（尝试 API 2/3）';
+    try {
+      var res = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=3&accept-language=zh&q=' + encodeURIComponent(query), { signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'DKF-Love/1.0' } });
+      var data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        result = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), name: data[0].name || data[0].display_name.split(',')[0], addr: data[0].display_name || '' };
+      }
+    } catch(e) { console.warn('API 2 failed'); }
+  }
+
+  // 3. Photon (Komoot's OSM-based API)
+  if (!result) {
+    hint.textContent = '🔍 正在搜索：' + query + '...（尝试 API 3/3）';
+    try {
+      var res2 = await fetch('https://photon.komoot.io/api/?limit=1&lang=zh&q=' + encodeURIComponent(query), { signal: AbortSignal.timeout(8000) });
+      var data2 = await res2.json();
+      if (data2.features && data2.features.length > 0) {
+        var p = data2.features[0].properties;
+        var c = data2.features[0].geometry.coordinates;
+        result = { lat: c[1], lng: c[0], name: p.name || p.street || p.city || query, addr: [p.city, p.state, p.country].filter(Boolean).join(', ') };
+      }
+    } catch(e) { console.warn('API 3 failed'); }
+  }
+
+  btn.textContent = '🔍 搜索'; btn.disabled = false;
 
   if (!result) {
-    document.getElementById('selectedHint').textContent = '😢 未找到"' + query + '"，换个关键词试试';
+    hint.textContent = '😢 未找到"' + query + '"，试试更具体的地点名，或直接点击地图选位置';
     return;
   }
 
+  hint.textContent = '';
   // Fly to location
-  var zoom = loveMap.getZoom() < 14 ? 14 : loveMap.getZoom();
-  loveMap.setView([result.lat, result.lng], zoom, { animate: true });
+  loveMap.setView([result.lat, result.lng], Math.max(loveMap.getZoom(), 14), { animate: true });
 
   // Place temp pin
   if (tempPin) loveMap.removeLayer(tempPin);
   pendingLatLng = { lat: result.lat, lng: result.lng };
   tempPin = L.marker([result.lat, result.lng], { icon: tempPinIcon }).addTo(loveMap);
 
-  // Auto-fill name
-  document.getElementById('mapPlaceName').value = result.addr
-    ? (result.name + ' · ' + result.addr)
-    : result.name;
-  document.getElementById('selectedHint').textContent = '✅ 已定位：' + result.name + ' — 可修改名称后点击添加';
+  document.getElementById('mapPlaceName').value = result.name;
+  document.getElementById('selectedHint').textContent = '✅ 已定位：' + result.name + (result.addr ? '（' + result.addr.split(',').slice(0,2).join(', ') + '）' : '') + ' — 可修改名称后点击添加';
   document.getElementById('mapClearPin').style.display = 'inline-block';
 }
 
