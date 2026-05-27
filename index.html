@@ -379,12 +379,15 @@
   <div class="card">
     <div class="section-label">🗺️ 爱的足迹地图</div>
     <div class="card-head">我们一起去过的地方</div>
-    <div class="card-sub">点击地图添加你们的足迹</div>
-    <div id="loveMap"></div>
-    <div class="map-add-btn" id="mapAddBtn">📍 在此添加足迹</div>
-    <div style="margin-top:8px;">
-      <input type="text" id="mapPlaceName" placeholder="地点名称（如：第一次约会的地方）" style="width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--pink-4);font-size:13px;background:var(--input-bg);color:var(--text);text-align:center;">
+    <div class="card-sub">点击地图选位置 → 输入名称 → 添加足迹</div>
+    <div id="loveMap" style="border:2px solid var(--pink-4);"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <input type="text" id="mapPlaceName" placeholder="地点名称（如：第一次约会的地方）" style="flex:1;padding:8px 12px;border-radius:12px;border:1px solid var(--pink-4);font-size:13px;background:var(--input-bg);color:var(--text);">
+      <button class="btn-sm" id="mapAddBtn" style="flex-shrink:0;">📍 添加</button>
+      <button class="btn-sm" id="mapClearPin" style="flex-shrink:0;background:var(--text-sub);display:none;">✕ 取消</button>
     </div>
+    <div id="selectedHint" style="font-size:12px;color:#E75480;margin-top:6px;min-height:18px;"></div>
+    <div id="mapMarkerList" style="margin-top:10px;text-align:left;"></div>
   </div>
 
   <!-- Voice -->
@@ -713,6 +716,90 @@ let loveMap;
 const mapKey = 'mapMarkers_dkf';
 let mapMarkers = JSON.parse(localStorage.getItem(mapKey)) || [];
 let pendingLatLng = null;
+let tempPin = null;
+let liveMarkers = [];
+
+// Custom heart icon
+const heartIcon = L.divIcon({
+  html: '<div style="font-size:28px;text-align:center;line-height:1;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.3));">❤️</div>',
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+  popupAnchor: [0, -16],
+});
+
+const tempPinIcon = L.divIcon({
+  html: '<div style="font-size:32px;text-align:center;line-height:1;animation:badgePulse 1.5s ease-in-out infinite;">📍</div>',
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+});
+
+function saveMarkers() {
+  mapMarkers = mapMarkers.filter(function(m) { return m && m.lat != null; });
+  localStorage.setItem(mapKey, JSON.stringify(mapMarkers));
+  renderMarkerList();
+}
+
+function delMarker(idx) {
+  if (idx < 0 || idx >= mapMarkers.length) return;
+  mapMarkers.splice(idx, 1);
+  saveMarkers();
+  rebuildMapMarkers();
+}
+
+function rebuildMapMarkers() {
+  liveMarkers.forEach(function(m) { loveMap.removeLayer(m); });
+  liveMarkers = [];
+  mapMarkers.forEach(function(m, idx) {
+    var mk = L.marker([m.lat, m.lng], { icon: heartIcon }).addTo(loveMap);
+    mk.bindPopup(createPopup(m.name, idx));
+    mk.on('click', function() { this.openPopup(); });
+    liveMarkers.push(mk);
+  });
+}
+
+function createPopup(name, idx) {
+  var html = '<div style="text-align:center;min-width:140px;">';
+  html += '<div style="font-size:15px;font-weight:700;color:#5A3E4B;margin-bottom:4px;">' + escapeHtml(name) + '</div>';
+  html += '<button onclick="window._delMarker(' + idx + ')" style="border:none;background:none;color:#E75480;cursor:pointer;font-size:13px;">🗑️ 删除此足迹</button>';
+  html += '</div>';
+  return html;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Expose delete function globally for popup onclick
+window._delMarker = delMarker;
+
+function renderMarkerList() {
+  var container = document.getElementById('mapMarkerList');
+  if (!container) return;
+  if (mapMarkers.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:8px;">还没有足迹，点击地图添加第一个吧~</div>';
+    return;
+  }
+  container.innerHTML = '';
+  mapMarkers.forEach(function(m, idx) {
+    var div = document.createElement('div');
+    div.className = 'marker-list-item';
+    div.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;margin-bottom:4px;background:var(--tag-bg);font-size:14px;color:var(--text);';
+    div.innerHTML = '<span>❤️</span><span style="flex:1;">' + escapeHtml(m.name) + '</span>'
+      + '<button class="marker-del-btn" data-idx="' + idx + '" style="border:none;background:none;color:var(--text-sub);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:50%;transition:all 0.2s;" title="删除">×</button>';
+    container.appendChild(div);
+  });
+  // Delete button handlers
+  container.querySelectorAll('.marker-del-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var idx = parseInt(this.dataset.idx);
+      delMarker(idx);
+    });
+    btn.addEventListener('mouseenter', function() { this.style.color = '#E75480'; this.style.background = 'rgba(231,84,128,0.1)'; });
+    btn.addEventListener('mouseleave', function() { this.style.color = ''; this.style.background = ''; });
+  });
+}
 
 function initMap() {
   var mapEl = document.getElementById('loveMap');
@@ -720,48 +807,65 @@ function initMap() {
 
   loveMap = L.map('loveMap', { attributionControl: false }).setView([30.5728, 104.0668], 5);
 
-  // Use Amap (高德) tiles directly — works reliably in China
+  // Gaode tiles
   L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
     subdomains: '1234', maxZoom: 18, attribution: '高德地图'
   }).addTo(loveMap);
 
-  // Load saved markers
-  mapMarkers.forEach(function(m) {
-    L.marker([m.lat, m.lng]).addTo(loveMap).bindPopup(m.name);
-  });
-
-  // Click to pick location
+  // Click to place temp pin
   loveMap.on('click', function(e) {
     pendingLatLng = e.latlng;
+    if (tempPin) loveMap.removeLayer(tempPin);
+    tempPin = L.marker(e.latlng, { icon: tempPinIcon }).addTo(loveMap);
     document.getElementById('mapPlaceName').focus();
+    document.getElementById('selectedHint').textContent = '✅ 已选位置：' + e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4) + ' — 输入名称后点击添加';
+    document.getElementById('mapClearPin').style.display = 'inline-block';
   });
+
+  // Load saved markers
+  rebuildMapMarkers();
+  renderMarkerList();
 
   setTimeout(function() { loveMap.invalidateSize(); }, 300);
 }
 
-// Init when Leaflet JS is loaded
 function tryInitMap() {
   if (typeof L !== 'undefined') { initMap(); return; }
   setTimeout(tryInitMap, 200);
 }
 tryInitMap();
 
+// Add button
 document.getElementById('mapAddBtn').addEventListener('click', function() {
-  const name = document.getElementById('mapPlaceName').value.trim();
+  var nameEl = document.getElementById('mapPlaceName');
+  var name = nameEl.value.trim();
   if (!pendingLatLng) {
-    alert('请先在地图上点击一个位置！');
+    document.getElementById('selectedHint').textContent = '⚠️ 请先在地图上点击一个位置';
     return;
   }
   if (!name) {
-    alert('请输入地点名称！');
+    document.getElementById('selectedHint').textContent = '⚠️ 请输入地点名称';
     return;
   }
-  const marker = { lat: pendingLatLng.lat, lng: pendingLatLng.lng, name: name };
+  var marker = { lat: pendingLatLng.lat, lng: pendingLatLng.lng, name: name };
   mapMarkers.push(marker);
-  localStorage.setItem(mapKey, JSON.stringify(mapMarkers));
-  L.marker([marker.lat, marker.lng]).addTo(loveMap).bindPopup(marker.name);
-  document.getElementById('mapPlaceName').value = '';
+  saveMarkers();
+  rebuildMapMarkers();
+  nameEl.value = '';
+  document.getElementById('selectedHint').textContent = '🎉 足迹"' + name + '"已添加！';
+  // Clear temp pin
+  if (tempPin) { loveMap.removeLayer(tempPin); tempPin = null; }
   pendingLatLng = null;
+  document.getElementById('mapClearPin').style.display = 'none';
+});
+
+// Clear pin button
+document.getElementById('mapClearPin').addEventListener('click', function() {
+  if (tempPin) { loveMap.removeLayer(tempPin); tempPin = null; }
+  pendingLatLng = null;
+  document.getElementById('selectedHint').textContent = '';
+  document.getElementById('mapPlaceName').value = '';
+  this.style.display = 'none';
 });
 
 // ==================== VOICE MESSAGE ====================
